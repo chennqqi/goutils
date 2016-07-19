@@ -15,6 +15,10 @@
 
 		Load and Save json config file
 
+##usage
+
+	go get github.com/chennqqi/goutils
+
 ##License
 
 	MIT
