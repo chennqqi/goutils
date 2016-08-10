@@ -104,3 +104,15 @@ func PathExists(filename string) bool {
 	_, err := os.Stat(filename)
 	return err == nil || os.IsExist(err)
 }
+
+func PathExists2(filename string) (bool, error) {
+	_, err := os.Stat(filename)
+	if err == nil {
+		return true, nil
+	}
+
+	if e, ok := err.(*os.PathError); ok && e.Error() == os.ErrNotExist.Error() {
+		return false, nil
+	}
+	return false, err
+}
