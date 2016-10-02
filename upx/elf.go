@@ -28,7 +28,7 @@ func IsElfUpxed(appName string) (bool, error) {
 	case "ELFCLASS64":
 		var hdr elf.Header64
 		f.Seek(0, os.SEEK_SET)
-		if err := binary.Read(f, _elf.ByteOrder, hdr); err != nil {
+		if err := binary.Read(f, _elf.ByteOrder, &hdr); err != nil {
 			return false, err
 		}
 		_elf.Progs[0].Flags.String()
@@ -37,7 +37,7 @@ func IsElfUpxed(appName string) (bool, error) {
 	case "ELFCLASS32":
 		var hdr elf.Header32
 		f.Seek(0, os.SEEK_SET)
-		if err := binary.Read(f, _elf.ByteOrder, hdr); err != nil {
+		if err := binary.Read(f, _elf.ByteOrder, &hdr); err != nil {
 			return false, err
 		}
 		f.Seek(int64(hdr.Phoff)+int64(hdr.Phentsize)*int64(hdr.Phnum), os.SEEK_SET)
