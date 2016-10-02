@@ -24,7 +24,6 @@ func IsElfUpxed(appName string) (bool, error) {
 		return false, fmt.Errorf("Bad magic number at %d\n", ident[0:4])
 	}
 
-	var arch string
 	switch _elf.Class.String() {
 	case "ELFCLASS64":
 		var hdr elf.Header64
