@@ -3,11 +3,23 @@ package utils
 import (
 	"errors"
 	"io/ioutil"
+	"mime/multipart"
 	"net"
 	"net/http"
+	"os"
 
 	gnet "github.com/shirou/gopsutil/net"
 )
+
+// 获取文件大小的接口
+type Size interface {
+	Size() int64
+}
+
+// 获取文件信息的接口
+type Stat interface {
+	Stat() (os.FileInfo, error)
+}
 
 func GetExternalIP() (string, error) {
 	resp, err := http.Get("http://myexternalip.com/raw")
@@ -54,4 +66,16 @@ func GetInternalIPByDevName(dev string) ([]string, error) {
 		}
 	}
 	return []string{}, errors.New("not found dev or ip addr")
+}
+
+func GetUploadFileSize(upfile multipart.File) (int64, error) {
+	if statInterface, ok := upfile.(Stat); ok {
+		fileInfo, _ := statInterface.Stat()
+		return fileInfo.Size(), nil
+	}
+	if sizeInterface, ok := upfile.(Size); ok {
+		fsize := sizeInterface.Size()
+		return fsize, nil
+	}
+	return 0, errors.New("not found stat and size interface")
 }
