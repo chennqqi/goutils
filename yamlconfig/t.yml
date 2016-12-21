@@ -1,0 +1,7 @@
+name: Jim
+age: 18
+scores: [100, 90, 88]
+subconfig:
+  value: ""
+  type: 0
+  s: 汉语测试
