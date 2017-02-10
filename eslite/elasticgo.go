@@ -14,7 +14,7 @@ type ElasticGoClient struct {
 	bkt    *elastigo.BulkIndexer
 }
 
-func (es *ElasticGoClient) Open(host string, port int) error {
+func (es *ElasticGoClient) Open(host string, port int, userName, pass string) error {
 	c := elastigo.NewConn()
 	log.SetFlags(log.LstdFlags)
 	c.Domain = host

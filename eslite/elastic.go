@@ -12,7 +12,7 @@ type ElasticClient struct {
 	bkt    *elastic.BulkService
 }
 
-func (es *ElasticClient) Open(host string, port int) error {
+func (es *ElasticClient) Open(host string, port int, userName, pass string) error {
 	url := fmt.Sprintf("http://%s:%d", host, port)
 	client, err := elastic.NewClient(elastic.SetURL(url))
 	if err != nil {

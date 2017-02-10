@@ -4,18 +4,20 @@ import (
 	"fmt"
 	"log"
 
-	"gopkg.in/olivere/elastic.v2"
+	"golang.org/x/net/context"
+	"gopkg.in/olivere/elastic.v5"
 )
 
-type ElasticClientV2 struct {
+type ElasticClientV5 struct {
 	client *elastic.Client
 	bkt    *elastic.BulkService
 }
 
-func (es *ElasticClientV2) Open(host string, port int, userName, pass string) error {
+func (es *ElasticClientV5) Open(host string, port int, usrName, pass string) error {
 	url := fmt.Sprintf("http://%s:%d", host, port)
 	fmt.Println(url)
-	client, err := elastic.NewClient(elastic.SetURL(url))
+	client, err := elastic.NewClient(elastic.SetURL(url),
+		elastic.SetBasicAuth(usrName, pass))
 	if err != nil {
 		return err
 	}
@@ -43,7 +45,7 @@ func (es *ElasticClientV2) Open(host string, port int, userName, pass string) er
 	return nil
 }
 
-func (es *ElasticClientV2) Write(index string, id string,
+func (es *ElasticClientV5) Write(index string, id string,
 	typ string, v interface{}) error {
 
 	es.bkt.Add(elastic.NewBulkIndexRequest().Index(
@@ -52,14 +54,14 @@ func (es *ElasticClientV2) Write(index string, id string,
 	return nil
 }
 
-func (es *ElasticClientV2) Begin() error {
+func (es *ElasticClientV5) Begin() error {
 	return nil
 }
 
-func (es *ElasticClientV2) Commit() error {
-	log.Println("DOBEFORE bulkRequest:NumberOfActions", es.bkt.NumberOfActions())
+func (es *ElasticClientV5) Commit() error {
+//	log.Println("DOBEFORE bulkRequest:NumberOfActions", es.bkt.NumberOfActions())
 
-	bulkResponse, err := es.bkt.Do()
+	bulkResponse, err := es.bkt.Do(context.Background())
 	if err != nil {
 		log.Panic(err)
 		return err
@@ -67,20 +69,20 @@ func (es *ElasticClientV2) Commit() error {
 	if bulkResponse == nil {
 		log.Fatal("expected bulkResponse to be != nil; got nil")
 	}
-	log.Println("DOAFTER buolkRequest:NumberOfActions", es.bkt.NumberOfActions())
+//	log.Println("DOAFTER buolkRequest:NumberOfActions", es.bkt.NumberOfActions())
 	return nil
 }
 
-func (es *ElasticClientV2) Close() {
+func (es *ElasticClientV5) Close() {
 	// Use the IndexExists service to check if a specified index exists.
-	exists, err := es.client.IndexExists("twitter").Do()
+	exists, err := es.client.IndexExists("twitter").Do(context.Background())
 	if err != nil {
 		// Handle error
 		panic(err)
 	}
 	if !exists {
 		// Create a new index.
-		createIndex, err := es.client.CreateIndex("twitter").Do()
+		createIndex, err := es.client.CreateIndex("twitter").Do(context.Background())
 		if err != nil {
 			// Handle error
 			panic(err)
@@ -92,8 +94,8 @@ func (es *ElasticClientV2) Close() {
 
 }
 
-func (es *ElasticClientV2) WriteDirect(index string, id string,
+func (es *ElasticClientV5) WriteDirect(index string, id string,
 	typ string, v interface{}) error {
-	_, err := es.client.Index().Index(index).Type(typ).Id(id).BodyJson(v).Do()
+	_, err := es.client.Index().Index(index).Type(typ).Id(id).BodyJson(v).Do(context.Background())
 	return err
 }

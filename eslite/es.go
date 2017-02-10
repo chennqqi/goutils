@@ -1,7 +1,7 @@
 package eslite
 
 type ESLite interface {
-	Open(host string, port int) error
+	Open(host string, port int, userName, pass string) error
 	Close()
 	Begin() error
 	Write(index string, id string,
