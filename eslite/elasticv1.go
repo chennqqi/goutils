@@ -8,12 +8,12 @@ import (
 	"gopkg.in/olivere/elastic.v1"
 )
 
-type ElasticClient struct {
+type ElasticClientV1 struct {
 	client *elastic.Client
 	bkt    *elastic.BulkService
 }
 
-func (es *ElasticClient) Open(host string, port int, userName, pass string) error {
+func (es *ElasticClientV1) Open(host string, port int, userName, pass string) error {
 	url := fmt.Sprintf("http://%s:%d", host, port)
 	client, err := elastic.NewClient(http.DefaultClient, url)
 	if err != nil {
@@ -43,7 +43,7 @@ func (es *ElasticClient) Open(host string, port int, userName, pass string) erro
 	return nil
 }
 
-func (es *ElasticClient) Write(index string, id string,
+func (es *ElasticClientV1) Write(index string, id string,
 	typ string, v interface{}) error {
 
 	es.bkt.Add(elastic.NewBulkIndexRequest().Index(
@@ -52,11 +52,11 @@ func (es *ElasticClient) Write(index string, id string,
 	return nil
 }
 
-func (es *ElasticClient) Begin() error {
+func (es *ElasticClientV1) Begin() error {
 	return nil
 }
 
-func (es *ElasticClient) Commit() error {
+func (es *ElasticClientV1) Commit() error {
 	log.Println("DOBEFORE bulkRequest:NumberOfActions", es.bkt.NumberOfActions())
 
 	bulkResponse, err := es.bkt.Do()
@@ -92,7 +92,7 @@ func (es *ElasticClient) Close() {
 
 }
 
-func (es *ElasticClient) WriteDirect(index string, id string,
+func (es *ElasticClientV1) WriteDirect(index string, id string,
 	typ string, v interface{}) error {
 	_, err := es.client.Index().Index(index).Type(typ).Id(id).BodyJson(v).Do()
 	return err
