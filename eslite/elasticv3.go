@@ -18,14 +18,14 @@ func (es *ElasticClientV3) Open(host string, port int, userName, pass string) er
 	if err != nil {
 		return err
 	}
-	info, code, err := client.Ping("http://127.0.0.1:9200").Do()
+	info, code, err := client.Ping(url).Do()
 	if err != nil {
 		// Handle error
 		panic(err)
 	}
 	fmt.Printf("Elasticsearch returned with code %d and version %s\n", code, info.Version.Number)
 
-	esversion, err := client.ElasticsearchVersion("http://127.0.0.1:9200")
+	esversion, err := client.ElasticsearchVersion(url)
 	if err != nil {
 		// Handle error
 		panic(err)

@@ -19,12 +19,12 @@ func (es *ElasticClientV2) Open(host string, port int, userName, pass string) er
 	if err != nil {
 		return err
 	}
-	//	info, code, err := client.Ping().Do()
-	//	if err != nil {
-	//		// Handle error
-	//		panic(err)
-	//	}
-	//	fmt.Printf("Elasticsearch returned with code %d and version %s\n", code, info.Version.Number)
+	info, code, err := client.Ping().URL(url).Do()
+	if err != nil {
+		// Handle error
+		panic(err)
+	}
+	fmt.Printf("Elasticsearch returned with code %d and version %s\n", code, info.Version.Number)
 
 	esversion, err := client.ElasticsearchVersion(url)
 	if err != nil {
@@ -89,7 +89,6 @@ func (es *ElasticClientV2) Close() {
 			// Not acknowledged
 		}
 	}
-
 }
 
 func (es *ElasticClientV2) WriteDirect(index string, id string,

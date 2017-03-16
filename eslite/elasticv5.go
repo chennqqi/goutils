@@ -21,7 +21,7 @@ func (es *ElasticClientV5) Open(host string, port int, usrName, pass string) err
 	if err != nil {
 		return err
 	}
-	//	info, code, err := client.Ping().Do()
+	//	info, code, err := client.Ping(url).Do()
 	//	if err != nil {
 	//		// Handle error
 	//		panic(err)
@@ -59,7 +59,7 @@ func (es *ElasticClientV5) Begin() error {
 }
 
 func (es *ElasticClientV5) Commit() error {
-//	log.Println("DOBEFORE bulkRequest:NumberOfActions", es.bkt.NumberOfActions())
+	//	log.Println("DOBEFORE bulkRequest:NumberOfActions", es.bkt.NumberOfActions())
 
 	bulkResponse, err := es.bkt.Do(context.Background())
 	if err != nil {
@@ -69,7 +69,7 @@ func (es *ElasticClientV5) Commit() error {
 	if bulkResponse == nil {
 		log.Fatal("expected bulkResponse to be != nil; got nil")
 	}
-//	log.Println("DOAFTER buolkRequest:NumberOfActions", es.bkt.NumberOfActions())
+	//	log.Println("DOAFTER buolkRequest:NumberOfActions", es.bkt.NumberOfActions())
 	return nil
 }
 
