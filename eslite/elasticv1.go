@@ -71,7 +71,7 @@ func (es *ElasticClientV1) Commit() error {
 	return nil
 }
 
-func (es *ElasticClient) Close() {
+func (es *ElasticClientV1) Close() {
 	// Use the IndexExists service to check if a specified index exists.
 	exists, err := es.client.IndexExists("twitter").Do()
 	if err != nil {
