@@ -3,23 +3,22 @@ package eslite
 import (
 	"fmt"
 	"log"
-	"net/http"
 
-	"gopkg.in/olivere/elastic.v1"
+	"gopkg.in/olivere/elastic.v3"
 )
 
-type ElasticClient struct {
+type ElasticClientV3 struct {
 	client *elastic.Client
 	bkt    *elastic.BulkService
 }
 
-func (es *ElasticClient) Open(host string, port int, userName, pass string) error {
+func (es *ElasticClientV3) Open(host string, port int, userName, pass string) error {
 	url := fmt.Sprintf("http://%s:%d", host, port)
-	client, err := elastic.NewClient(http.DefaultClient, url)
+	client, err := elastic.NewClient(elastic.SetURL(url))
 	if err != nil {
 		return err
 	}
-	info, code, err := client.Ping().Do()
+	info, code, err := client.Ping("http://127.0.0.1:9200").Do()
 	if err != nil {
 		// Handle error
 		panic(err)
@@ -43,7 +42,7 @@ func (es *ElasticClient) Open(host string, port int, userName, pass string) erro
 	return nil
 }
 
-func (es *ElasticClient) Write(index string, id string,
+func (es *ElasticClientV3) Write(index string, id string,
 	typ string, v interface{}) error {
 
 	es.bkt.Add(elastic.NewBulkIndexRequest().Index(
@@ -52,11 +51,11 @@ func (es *ElasticClient) Write(index string, id string,
 	return nil
 }
 
-func (es *ElasticClient) Begin() error {
+func (es *ElasticClientV3) Begin() error {
 	return nil
 }
 
-func (es *ElasticClient) Commit() error {
+func (es *ElasticClientV3) Commit() error {
 	log.Println("DOBEFORE bulkRequest:NumberOfActions", es.bkt.NumberOfActions())
 
 	bulkResponse, err := es.bkt.Do()
@@ -71,7 +70,7 @@ func (es *ElasticClient) Commit() error {
 	return nil
 }
 
-func (es *ElasticClient) Close() {
+func (es *ElasticClientV3) Close() {
 	// Use the IndexExists service to check if a specified index exists.
 	exists, err := es.client.IndexExists("twitter").Do()
 	if err != nil {
@@ -92,7 +91,7 @@ func (es *ElasticClient) Close() {
 
 }
 
-func (es *ElasticClient) WriteDirect(index string, id string,
+func (es *ElasticClientV3) WriteDirect(index string, id string,
 	typ string, v interface{}) error {
 	_, err := es.client.Index().Index(index).Type(typ).Id(id).BodyJson(v).Do()
 	return err
