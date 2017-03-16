@@ -26,10 +26,14 @@ es write wrapper
 	//configure ...
 	//...
 	switch ESEngine {
-	case "ElasticClient":
-		es = &eslite.ElasticClient{}
+	case "ElasticClientV":
+		es = &eslite.ElasticClientV1{}
 	case "ElasticClientV2":
 		es = &eslite.ElasticClientV2{}
+	case "ElasticClientV3":
+		es = &eslite.ElasticClientV3{}
+	case "ElasticClientV5":
+		es = &eslite.ElasticClientV5{}
 	case "ElasticGoClient":
 		es = &eslite.ElasticGoClient{}
 	default:
