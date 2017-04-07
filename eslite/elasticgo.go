@@ -63,7 +63,7 @@ func (es *ElasticGoClient) Commit() error {
 }
 
 func (es *ElasticGoClient) Close() {
-
+	es.client.Close()
 }
 
 func (es *ElasticGoClient) WriteDirect(index string, id string,

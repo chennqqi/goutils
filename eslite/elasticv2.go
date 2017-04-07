@@ -61,7 +61,7 @@ func (es *ElasticClientV2) Commit() error {
 
 	bulkResponse, err := es.bkt.Do()
 	if err != nil {
-		log.Panic(err)
+		log.Println(err)
 		return err
 	}
 	if bulkResponse == nil {
@@ -73,22 +73,7 @@ func (es *ElasticClientV2) Commit() error {
 
 func (es *ElasticClientV2) Close() {
 	// Use the IndexExists service to check if a specified index exists.
-	exists, err := es.client.IndexExists("twitter").Do()
-	if err != nil {
-		// Handle error
-		panic(err)
-	}
-	if !exists {
-		// Create a new index.
-		createIndex, err := es.client.CreateIndex("twitter").Do()
-		if err != nil {
-			// Handle error
-			panic(err)
-		}
-		if !createIndex.Acknowledged {
-			// Not acknowledged
-		}
-	}
+
 }
 
 func (es *ElasticClientV2) WriteDirect(index string, id string,

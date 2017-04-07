@@ -63,34 +63,17 @@ func (es *ElasticClientV1) Commit() error {
 
 	bulkResponse, err := es.bkt.Do()
 	if err != nil {
-		log.Panic(err)
+		log.Println(err)
 		return err
 	}
 	if bulkResponse == nil {
 		log.Fatal("expected bulkResponse to be != nil; got nil")
 	}
 	log.Println("DOAFTER buolkRequest:NumberOfActions", es.bkt.NumberOfActions())
-	return nil
+	return err
 }
 
 func (es *ElasticClientV1) Close() {
-	// Use the IndexExists service to check if a specified index exists.
-	exists, err := es.client.IndexExists("twitter").Do()
-	if err != nil {
-		// Handle error
-		panic(err)
-	}
-	if !exists {
-		// Create a new index.
-		createIndex, err := es.client.CreateIndex("twitter").Do()
-		if err != nil {
-			// Handle error
-			panic(err)
-		}
-		if !createIndex.Acknowledged {
-			// Not acknowledged
-		}
-	}
 
 }
 

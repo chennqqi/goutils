@@ -21,12 +21,12 @@ func (es *ElasticClientV5) Open(host string, port int, usrName, pass string) err
 	if err != nil {
 		return err
 	}
-	//	info, code, err := client.Ping(url).Do()
-	//	if err != nil {
-	//		// Handle error
-	//		panic(err)
-	//	}
-	//	fmt.Printf("Elasticsearch returned with code %d and version %s\n", code, info.Version.Number)
+	info, code, err := client.Ping(url).Do(context.TODO())
+	if err != nil {
+		// Handle error
+		panic(err)
+	}
+	fmt.Printf("Elasticsearch returned with code %d and version %s\n", code, info.Version.Number)
 
 	esversion, err := client.ElasticsearchVersion(url)
 	if err != nil {
@@ -63,35 +63,18 @@ func (es *ElasticClientV5) Commit() error {
 
 	bulkResponse, err := es.bkt.Do(context.Background())
 	if err != nil {
-		log.Panic(err)
+		log.Println(err)
 		return err
 	}
 	if bulkResponse == nil {
 		log.Fatal("expected bulkResponse to be != nil; got nil")
 	}
 	//	log.Println("DOAFTER buolkRequest:NumberOfActions", es.bkt.NumberOfActions())
-	return nil
+	return err
 }
 
 func (es *ElasticClientV5) Close() {
 	// Use the IndexExists service to check if a specified index exists.
-	exists, err := es.client.IndexExists("twitter").Do(context.Background())
-	if err != nil {
-		// Handle error
-		panic(err)
-	}
-	if !exists {
-		// Create a new index.
-		createIndex, err := es.client.CreateIndex("twitter").Do(context.Background())
-		if err != nil {
-			// Handle error
-			panic(err)
-		}
-		if !createIndex.Acknowledged {
-			// Not acknowledged
-		}
-	}
-
 }
 
 func (es *ElasticClientV5) WriteDirect(index string, id string,
