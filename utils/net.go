@@ -51,6 +51,22 @@ func GetInternalIP() (string, error) {
 	return "", nil
 }
 
+func GetRequestIP(r *http.Request) string {
+	if r.Header.Get("X-Real-IP") != "" {
+		return r.Header.Get("X-Real-IP")
+	}
+	if r.Header.Get("X-Forwarded-For") != "" {
+		return r.Header.Get("X-Forwarded-For")
+	}
+	if r.Header.Get("Proxy-Client-IP") != "" {
+		return r.Header.Get("Proxy-Client-IP")
+	}
+	if r.Header.Get("WL-Proxy-Client-IP") != "" {
+		return r.Header.Get("WL-Proxy-Client-IP")
+	}
+	return r.RemoteAddr
+}
+
 func GetInternalIPByDevName(dev string) ([]string, error) {
 	addrs, err := gnet.Interfaces()
 	if err != nil {
