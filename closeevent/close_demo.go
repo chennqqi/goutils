@@ -1,4 +1,4 @@
-package closeevent
+ï»¿package closeevent
 
 import (
 	"os"
@@ -7,13 +7,13 @@ import (
 
 func demo(){
 	c := make(chan os.Signal)
-	signalNotify(c)
+	CloseNotify(c)
 	for {
-		fmt.Println("run...", err)
+		fmt.Println("run...")
 		
 		s := <-c
 
-		//ÊÕµ½ÐÅºÅºóµÄ´¦Àí£¬ÕâÀïÖ»ÊÇÊä³öÐÅºÅÄÚÈÝ£¬¿ÉÒÔ×öÒ»Ð©¸üÓÐÒâË¼µÄÊÂ
+		//æ”¶åˆ°ä¿¡å·åŽçš„å¤„ç†ï¼Œè¿™é‡Œåªæ˜¯è¾“å‡ºä¿¡å·å†…å®¹ï¼Œå¯ä»¥åšä¸€äº›æ›´æœ‰æ„æ€çš„äº‹
 		fmt.Println("get signal:", s)
 		fmt.Println("close...")
 		

@@ -1,4 +1,4 @@
-#closeevent
+﻿#closeevent
 
 
 
@@ -9,7 +9,7 @@ func demo(){
 	c := make(chan os.Signal)
 	signalNotify(c)
 	for {
-		fmt.Println("run...", err)
+		fmt.Println("run...")
 		
 		s := <-c
 
