@@ -68,7 +68,7 @@ func (es *ElasticClientV2) Commit() error {
 		log.Fatal("expected bulkResponse to be != nil; got nil")
 	}
 	log.Println("DOAFTER buolkRequest:NumberOfActions", es.bkt.NumberOfActions())
-	return nil
+	return err
 }
 
 func (es *ElasticClientV2) Close() {

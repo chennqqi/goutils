@@ -1,4 +1,9 @@
-838/720
+#goutils:
 
-25ms
-1MB/1G/1C 100G
+##history
+2017/04/09
+
+```
+GetRequestIP(r *http.Request)     
+//get request from http.Request
+```
