@@ -6,7 +6,7 @@ import (
 	ppf "runtime/pprof"
 )
 
-func RunNetPerf(host string) error {
+func ListenAndServe(host string) error {
 	if host == "" {
 		host = ":6060"
 	}
