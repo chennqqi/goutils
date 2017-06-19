@@ -1,3 +1,5 @@
+[![GoDoc](https://godoc.org/github.com/chennqqi/goutil?status.svg)](https://godoc.org/github.com/chennqqi/goutil) [![License: MIT]
+
 #goutils
 
 	some useful utilities for golang

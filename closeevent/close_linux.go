@@ -1,3 +1,4 @@
+//signal notify close event(win:INT,TREM,USR1)
 package closeevent
 
 import (

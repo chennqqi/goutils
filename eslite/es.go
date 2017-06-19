@@ -1,3 +1,4 @@
+//Package for a simple elasticsearch writer, support es1~es5
 package eslite
 
 type ESLite interface {

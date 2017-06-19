@@ -1,3 +1,4 @@
+//mysql dump tool
 package mysqldump
 
 import (

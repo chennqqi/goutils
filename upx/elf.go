@@ -1,3 +1,4 @@
+//judge if an excute program packed by 'upx'
 package upx
 
 import (

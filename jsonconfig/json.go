@@ -1,3 +1,4 @@
+// Package simple json config file load and save function.
 package jsonconfig
 
 import (
@@ -15,6 +16,7 @@ func getConfName() string {
 	return appName + ".json"
 }
 
+//load json config file to struct `pv`, if not given fname, use $APPNAME.json
 func Load(pv interface{}, fname string) error {
 	if fname == "" {
 		fname = getConfName()
@@ -27,6 +29,7 @@ func Load(pv interface{}, fname string) error {
 	return json.Unmarshal(txtBytes, pv)
 }
 
+//save struct to fname file, if not given fname, use $APPNAME.json
 func Save(v interface{}, fname string) error {
 	if fname == "" {
 		fname = getConfName()

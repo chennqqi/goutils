@@ -1,3 +1,4 @@
+//a simple yaml config load and save function package
 package yamlconfig
 
 import (
