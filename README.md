@@ -1,11 +1,11 @@
 [![GoDoc](https://godoc.org/github.com/chennqqi/goutil?status.svg)](https://godoc.org/github.com/chennqqi/goutil)  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-#goutils
+# goutils
 
 	some useful utilities for golang
 
 
-##utilities
+## utilities
 
 	WildcardCmp
 
@@ -39,10 +39,10 @@
 
 		unescape url safely
 
-##usage
+## usage
 
 	go get -u github.com/chennqqi/goutils
 
-##License
+## License
 
 	MIT
