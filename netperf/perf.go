@@ -4,7 +4,6 @@ package netperf
 import (
 	"net/http"
 	_ "net/http/pprof"
-	ppf "runtime/pprof"
 )
 
 func ListenAndServe(host string) error {
