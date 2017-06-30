@@ -1,3 +1,4 @@
+//a simple redis writer with pool support
 package simpleredis
 
 import (

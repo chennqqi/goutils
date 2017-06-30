@@ -1,4 +1,4 @@
-// Package simple json config file load and save function.
+//a simple json config file load and save function.
 package jsonconfig
 
 import (
