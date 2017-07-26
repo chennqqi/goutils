@@ -7,3 +7,11 @@
 GetRequestIP(r *http.Request)     
 //get request from http.Request
 ```
+
+201&/07/26
+
+
+```
+GetHostIP() (string,error)   
+//return host self ip
+```
