@@ -21,6 +21,7 @@ type Stat interface {
 	Stat() (os.FileInfo, error)
 }
 
+// 返回公网出口IP
 func GetExternalIP() (string, error) {
 	resp, err := http.Get("http://myexternalip.com/raw")
 	if err != nil {
@@ -35,6 +36,21 @@ func GetExternalIP() (string, error) {
 	return string(txt), nil
 }
 
+// 返回主机HOST IP
+func GetHostIP() (string, error) {
+	host, err := os.Hostname()
+	if err != nil {
+		return "", err
+	}
+	addr, err := net.ResolveIPAddr("ip", host)
+	if err != nil {
+		return "", err
+	}
+
+	return addr.String(), nil
+}
+
+// 返回主机内部IP（顺序第一个）
 func GetInternalIP() (string, error) {
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
@@ -51,6 +67,7 @@ func GetInternalIP() (string, error) {
 	return "", nil
 }
 
+//返回HTTP请求IP,优先级(X-Real-IP>X-Forwarded-For>Proxy-Client-IP>WL-Proxy-Client-IP")
 func GetRequestIP(r *http.Request) string {
 	if r.Header.Get("X-Real-IP") != "" {
 		return r.Header.Get("X-Real-IP")
@@ -67,6 +84,7 @@ func GetRequestIP(r *http.Request) string {
 	return r.RemoteAddr
 }
 
+//根据网卡设备名称返回内部IP
 func GetInternalIPByDevName(dev string) ([]string, error) {
 	addrs, err := gnet.Interfaces()
 	if err != nil {
@@ -84,6 +102,7 @@ func GetInternalIPByDevName(dev string) ([]string, error) {
 	return []string{}, errors.New("not found dev or ip addr")
 }
 
+//返回HTTP upload文件的大小
 func GetUploadFileSize(upfile multipart.File) (int64, error) {
 	if statInterface, ok := upfile.(Stat); ok {
 		fileInfo, _ := statInterface.Stat()
