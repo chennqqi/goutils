@@ -11,8 +11,8 @@ import (
 //获取指定目录下的所有文件，不进入下一级目录搜索，可以匹配后缀过滤。
 func DoListDir(dirPth string, suffix string, f func(fileName string) error) error {
 	dir, err := ioutil.ReadDir(dirPth)
-	if err != nil {
-		return err
+	if err != nil { //忽略错误
+		return nil
 	}
 	PthSep := string(os.PathSeparator)
 	suffix = strings.ToUpper(suffix) //忽略后缀匹配的大小写
@@ -31,8 +31,8 @@ func DoListDir(dirPth string, suffix string, f func(fileName string) error) erro
 //获取指定目录下的所有文件，不进入下一级目录搜索，可以匹配后缀过滤。
 func DoListDirEx(dirPth string, suffix string, f func(fullpath string, fileName string) error) error {
 	dir, err := ioutil.ReadDir(dirPth)
-	if err != nil {
-		return err
+	if err != nil { //忽略错误
+		return nil
 	}
 	PthSep := string(os.PathSeparator)
 	suffix = strings.ToUpper(suffix) //忽略后缀匹配的大小写
@@ -51,8 +51,8 @@ func DoListDirEx(dirPth string, suffix string, f func(fullpath string, fileName 
 //获取指定目录下的所有文件，不进入下一级目录搜索，可以匹配后缀过滤。
 func ListDir(dirPth string, suffix string, ch chan<- string) error {
 	dir, err := ioutil.ReadDir(dirPth)
-	if err != nil {
-		return err
+	if err != nil { //忽略错误
+		return nil
 	}
 	PthSep := string(os.PathSeparator)
 	suffix = strings.ToUpper(suffix) //忽略后缀匹配的大小写
@@ -70,9 +70,10 @@ func DoWalkDir(dirPth, suffix string, f func(fileName string, isdir bool) error)
 	suffix = strings.ToUpper(suffix) //忽略后缀匹配的大小写
 	err := filepath.Walk(dirPth,
 		func(filename string, fi os.FileInfo, err error) error { //遍历目录
-			//if err != nil { //忽略错误
-			// return err
-			//}
+			if err != nil { //忽略错误
+				// return err
+				return nil
+			}
 			if fi.IsDir() { // 忽略目录
 				f(filename, true)
 				return nil
@@ -88,9 +89,10 @@ func WalkDir(dirPth, suffix string, ch chan<- string) error {
 	suffix = strings.ToUpper(suffix) //忽略后缀匹配的大小写
 	err := filepath.Walk(dirPth,
 		func(filename string, fi os.FileInfo, err error) error { //遍历目录
-			//if err != nil { //忽略错误
-			// return err
-			//}
+			if err != nil { //忽略错误
+				// return err
+				return nil
+			}
 			if fi.IsDir() { // 忽略目录
 				return nil
 			}
