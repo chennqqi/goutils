@@ -39,6 +39,10 @@
 
 		unescape url safely
 
+	consul
+
+		consul api(service discovery, lock, configure)
+
 ## usage
 
 	go get -u github.com/chennqqi/goutils
