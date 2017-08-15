@@ -106,7 +106,7 @@ func (c *ConsulOperator) Delete(name string) error {
 	return err
 }
 
-func (c *ConsulOperator) Acquire(key string) error {
+func (c *ConsulOperator) Acquire(key string, stopChan <-chan struct{}) error {
 	lock, exist := c.lockmap[key]
 	var err error
 	if !exist {
@@ -117,7 +117,7 @@ func (c *ConsulOperator) Acquire(key string) error {
 		}
 		c.lockmap[key] = lock
 	}
-	_, err = lock.Lock(nil)
+	_, err = lock.Lock(stopChan)
 	if err != nil {
 		logrus.Error("consul Require lock.Lock error ", err)
 		return err
