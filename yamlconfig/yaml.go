@@ -30,6 +30,14 @@ func Load(pv interface{}, fname string) error {
 }
 
 /*
+	load configure `memBytes` to an `pv` interface{}
+	@return: error
+*/
+func LoadMem(pv interface{}, memBytes []byte) error {
+	return yaml.Unmarshal(memBytes, pv)
+}
+
+/*
 	save configure to `fname`
 	@return: error
 	@detail: if `fname` is empty, it will auto get`${applicationName}.yml`

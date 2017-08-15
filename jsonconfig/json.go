@@ -29,6 +29,14 @@ func Load(pv interface{}, fname string) error {
 	return json.Unmarshal(txtBytes, pv)
 }
 
+/*
+	load configure `memBytes` to an `pv` interface{}
+	@return: error
+*/
+func LoadMem(pv interface{}, memBytes []byte) error {
+	return json.Unmarshal(memBytes, pv)
+}
+
 //save struct to fname file, if not given fname, use $APPNAME.json
 func Save(v interface{}, fname string) error {
 	if fname == "" {
