@@ -96,7 +96,9 @@ func WalkDir(dirPth, suffix string, ch chan<- string) error {
 			if fi.IsDir() { // 忽略目录
 				return nil
 			}
-			ch <- filename
+			if fi.Mode().IsRegular() {
+				ch <- filename
+			}
 			return nil
 		})
 	return err

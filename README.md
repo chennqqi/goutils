@@ -42,6 +42,10 @@
 	consul
 
 		consul api(service discovery, lock, configure)
+		
+	security
+	
+		rsaencrypt/rsadecrypt
 
 ## usage
 
