@@ -180,10 +180,17 @@ func (c *ConsulOperator) PrintServices(name string) error {
 	return err
 }
 
-func (c *ConsulOperator) ListServices(name string) ([]*consulapi.CatalogService, error) {
+func (c *ConsulOperator) ListService(name string) ([]*consulapi.CatalogService, error) {
 	consul := c.consul
 	catalog := consul.Catalog()
 	services, _, err := catalog.Service(name, "", nil)
+	return services, err
+}
+
+func (c *ConsulOperator) ListServices() (map[string][]string, error) {
+	consul := c.consul
+	catalog := consul.Catalog()
+	services, _, err := catalog.Services(nil)
 	return services, err
 }
 
