@@ -43,7 +43,7 @@ func NewAppWithCfg(cfg interface{}, healthHost string) (*ConsulApp, error) {
 		if err == nil {
 			yaml.Unmarshal(txt, &cfg)
 		} else {
-			logrus.Error("[main:main] Load yml form consul error ", err)
+			logrus.Error("[main:main] Load yml from consul error ", err)
 			err = yamlconfig.Load(&cfg, "")
 			if err != nil {
 				fmt.Println("make empty local config")
@@ -61,8 +61,9 @@ func NewAppWithCfg(cfg interface{}, healthHost string) (*ConsulApp, error) {
 			return nil, errors.New("cfg not contains`HealthHost")
 		}
 		healthHost = field.String()
-	} else {
-		return nil, errors.New("cfg or healHost must be valid")
+	}
+	if healthHost == "" {
+		return nil, errors.New("cfg or HealthHost must be valid")
 	}
 
 	{
