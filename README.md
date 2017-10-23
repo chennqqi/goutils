@@ -47,6 +47,9 @@
 	
 		rsaencrypt/rsadecrypt
 
+	c 
+		some utils of C(eg. md5)
+
 ## usage
 
 	go get -u github.com/chennqqi/goutils
