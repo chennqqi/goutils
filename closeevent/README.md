@@ -1,4 +1,4 @@
-﻿#closeevent
+#closeevent
 
 
 
@@ -23,3 +23,17 @@ func demo(){
 		break
 	}
 }
+	
+	func demo(){
+		//graceful shutdown
+		var wg sync.WaitGroup
+		//
+		go func() {
+			http.Server(host,nil)
+		}()
+	
+		closeevent.Wait(func(sig os.Signal) {
+			http.Shutdown()
+			wg.Wait()
+		})
+	}
