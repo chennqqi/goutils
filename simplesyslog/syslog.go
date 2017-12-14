@@ -82,8 +82,8 @@ func (ss *SyslogAgent) Send(message string, facility string, severity string) {
 	fmt.Fprintf(ss.udpConn, full_message)
 }
 
-func (ss *SyslogAgent) Forward(message string) (int, error) {
-	return ss.udpConn.Write([]byte(message))
+func (ss *SyslogAgent) Forward(message []byte) (int, error) {
+	return ss.udpConn.Write(message)
 }
 
 func (ss *SyslogAgent) Fd() *net.UDPConn {
