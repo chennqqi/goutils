@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	gnet "github.com/shirou/gopsutil/net"
+	"github.com/tomasen/realip"
 )
 
 // 获取文件大小的接口
@@ -130,7 +131,7 @@ func GetRequestIP(r *http.Request) string {
 	if r.Header.Get("WL-Proxy-Client-IP") != "" {
 		return r.Header.Get("WL-Proxy-Client-IP")
 	}
-	return r.RemoteAddr
+	return realip.FromRequest(r)
 }
 
 //根据网卡设备名称返回内部IP
