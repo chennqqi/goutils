@@ -26,7 +26,7 @@ type Stat interface {
 
 // 返回公网出口IP
 func GetExternalIP() (string, error) {
-	resp, err := http.Get("http://myexternalip.com/raw")
+	resp, err := http.Get("http://ipaddr.site")
 	if err != nil {
 		return "", err
 	}
