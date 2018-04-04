@@ -20,7 +20,7 @@ func (es *ElasticClientV5) Open(host string, port int, usrName, pass string) err
 		url = host
 	}
 	client, err := elastic.NewClient(elastic.SetURL(url),
-		elastic.SetBasicAuth(usrName, pass))
+		elastic.SetBasicAuth(usrName, pass), elastic.SetSniff(false))
 	if err != nil {
 		return err
 	}

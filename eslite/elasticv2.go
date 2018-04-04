@@ -18,7 +18,7 @@ func (es *ElasticClientV2) Open(host string, port int, userName, pass string) er
 	if strings.HasPrefix(host, "http://") || strings.HasPrefix(host, "https://") {
 		url = host
 	}
-	client, err := elastic.NewClient(elastic.SetURL(url))
+	client, err := elastic.NewClient(elastic.SetURL(url), elastic.SetSniff(false))
 	if err != nil {
 		return err
 	}
