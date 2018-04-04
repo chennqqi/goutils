@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"gopkg.in/olivere/elastic.v1"
 )
@@ -15,6 +16,9 @@ type ElasticClientV1 struct {
 
 func (es *ElasticClientV1) Open(host string, port int, userName, pass string) error {
 	url := fmt.Sprintf("http://%s:%d", host, port)
+	if strings.HasPrefix(host, "http://") || strings.HasPrefix(host, "https://") {
+		url = host
+	}
 	client, err := elastic.NewClient(http.DefaultClient, url)
 	if err != nil {
 		return err
