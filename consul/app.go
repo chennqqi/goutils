@@ -19,7 +19,7 @@ type ConsulApp struct {
 	*ConsulOperator
 }
 
-func NewAppWithCfg(cfg interface{}, healthHost string) (*ConsulApp, error) {
+func NewAppWithCustomCfg(cfg interface{}, confName, healthHost string) (*ConsulApp, error) {
 	var capp ConsulApp
 	appName := utils.ApplicationName()
 	consulapi := NewConsulOp("")
@@ -28,18 +28,24 @@ func NewAppWithCfg(cfg interface{}, healthHost string) (*ConsulApp, error) {
 
 	if err := consulapi.Ping(); err != nil {
 		logrus.Error("[main] ping consul failed, try local")
-		err := yamlconfig.Load(cfg, "")
+
+		if confName == "" {
+			confName = fmt.Sprintf("%s.yml", appName)
+		}
+		err := yamlconfig.Load(cfg, confName)
 		if os.IsNotExist(err) {
 			fmt.Println("configure not exist, make default")
-			yamlconfig.Save(cfg, "")
+			yamlconfig.Save(cfg, confName)
 			return nil, err
 		} else if err != nil {
 			logrus.Error("[main:main] Load yml config error")
 			return nil, err
 		}
 	} else {
-		key := fmt.Sprintf("config/%s.yml", appName)
-		txt, err := consulapi.Get(key)
+		if confName == "" {
+			confName = fmt.Sprintf("config/%s.yml", appName)
+		}
+		txt, err := consulapi.Get(confName)
 		if err == nil {
 			yaml.Unmarshal(txt, cfg)
 		} else {
@@ -74,6 +80,10 @@ func NewAppWithCfg(cfg interface{}, healthHost string) (*ConsulApp, error) {
 		}
 	}
 	return &capp, nil
+}
+
+func NewAppWithCfg(cfg interface{}, confName, healthHost string) (*ConsulApp, error) {
+	return NewAppWithCustomCfg(cfg, "", healthHost)
 }
 
 func NewApp(healthHost string) (*ConsulApp, error) {
