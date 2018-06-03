@@ -2,9 +2,15 @@ package utils
 
 import (
 	"archive/zip"
+	"errors"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
+)
+
+const (
+	DEFAULT_UNZIP_LIMIT = 64 * 1024 * 1024 * 1024
 )
 
 func Unzip(src, dest string) error {
@@ -62,5 +68,110 @@ func Unzip(src, dest string) error {
 		}
 	}
 
+	return nil
+}
+
+func ZipSize(zipR *zip.ReadCloser) uint64 {
+	var totalSize uint64
+	for idx := 0; idx < len(zipR.File); idx++ {
+		totalSize += zipR.File[idx].UncompressedSize64
+	}
+	return totalSize
+}
+
+func UnzipSafe(archive, target string, sizeLimit uint64) error {
+	if sizeLimit == 0 {
+		sizeLimit = DEFAULT_UNZIP_LIMIT
+	}
+
+	reader, err := zip.OpenReader(archive)
+	if err != nil {
+		return err
+	}
+	defer reader.Close()
+
+	if ZipSize(reader) > sizeLimit {
+		return errors.New("SIZE OVER LIMIT")
+	}
+
+	for _, file := range reader.File {
+		filePath := filepath.Join(target, file.Name)
+
+		if file.FileInfo().IsDir() {
+			os.MkdirAll(filePath, file.Mode())
+			continue
+		}
+		fileReader, err := file.Open()
+		if err != nil {
+			return err
+		}
+		defer fileReader.Close()
+
+		targetFile, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
+		if err != nil {
+			return err
+		}
+		defer targetFile.Close()
+
+		if _, err := io.Copy(targetFile, fileReader); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func ScanZip(archive, tmpDir string, sizeLimit uint64, scanCall func(filename string) error) error {
+	if sizeLimit == 0 {
+		sizeLimit = DEFAULT_UNZIP_LIMIT
+	}
+	nTmp, err := ioutil.TempDir(tmpDir, "szipproc_")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(nTmp)
+
+	reader, err := zip.OpenReader(archive)
+	if err != nil {
+		return err
+	}
+	defer reader.Close()
+
+	if ZipSize(reader) > sizeLimit {
+		return errors.New("ZIP UNCOMPRESS OVERLIMIT")
+	}
+
+	for _, file := range reader.File {
+		filePath := filepath.Join(nTmp, file.Name)
+		filePath = CleanFileName(nTmp, filePath)
+
+		if file.FileInfo().IsDir() {
+			os.MkdirAll(filePath, file.Mode())
+			continue
+		}
+		os.MkdirAll(filepath.Dir(filePath), 0644)
+
+		fileReader, err := file.Open()
+		if err != nil {
+			return err
+		}
+		defer fileReader.Close()
+
+		targetFile, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
+		if err != nil {
+			return err
+		}
+		defer os.Remove(filePath)
+
+		if _, err := io.Copy(targetFile, fileReader); err != nil {
+			targetFile.Close()
+			return err
+		}
+		targetFile.Close()
+
+		err = scanCall(filePath)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
