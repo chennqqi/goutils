@@ -3,6 +3,7 @@ package eslite
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"gopkg.in/olivere/elastic.v3"
 )
@@ -14,7 +15,10 @@ type ElasticClientV3 struct {
 
 func (es *ElasticClientV3) Open(host string, port int, userName, pass string) error {
 	url := fmt.Sprintf("http://%s:%d", host, port)
-	client, err := elastic.NewClient(elastic.SetURL(url))
+	if strings.HasPrefix(host, "http://") || strings.HasPrefix(host, "https://") {
+		url = host
+	}
+	client, err := elastic.NewClient(elastic.SetURL(url), elastic.SetSniff(false))
 	if err != nil {
 		return err
 	}

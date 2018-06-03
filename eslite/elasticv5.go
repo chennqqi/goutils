@@ -3,6 +3,7 @@ package eslite
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"golang.org/x/net/context"
 	"gopkg.in/olivere/elastic.v5"
@@ -15,9 +16,12 @@ type ElasticClientV5 struct {
 
 func (es *ElasticClientV5) Open(host string, port int, usrName, pass string) error {
 	url := fmt.Sprintf("http://%s:%d", host, port)
-	fmt.Println(url)
+	if strings.HasPrefix(host, "http://") || strings.HasPrefix(host, "https://") {
+		url = host
+	}
 	client, err := elastic.NewClient(elastic.SetURL(url),
-		elastic.SetBasicAuth(usrName, pass))
+		elastic.SetBasicAuth(usrName, pass), elastic.SetSniff(false))
+
 	if err != nil {
 		return err
 	}

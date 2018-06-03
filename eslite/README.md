@@ -55,3 +55,7 @@ es write wrapper
 			es.Begin()
 		}
 	}
+
+## note
+
+disable sniffing ElasticClientV2 ElasticClientV3 ElasticClientV5

@@ -57,7 +57,7 @@
 ```
 
 	var cfg YourAppCfg
-	capp,err := consul.NewAppWithCfg(&cfg, ":8081")
+	capp,err := consul.NewAppWithCfg(&cfg, "", ":8081")
 
 		service := newService()
 		...//you code
