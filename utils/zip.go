@@ -96,11 +96,14 @@ func UnzipSafe(archive, target string, sizeLimit uint64) error {
 
 	for _, file := range reader.File {
 		filePath := filepath.Join(target, file.Name)
+		filePath = CleanFileName(target, filePath)
 
 		if file.FileInfo().IsDir() {
 			os.MkdirAll(filePath, file.Mode())
 			continue
 		}
+		os.MkdirAll(filepath.Dir(filePath), 0644)
+
 		fileReader, err := file.Open()
 		if err != nil {
 			return err
