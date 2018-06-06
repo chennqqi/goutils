@@ -102,7 +102,7 @@ func UnzipSafe(archive, target string, sizeLimit uint64) error {
 			os.MkdirAll(filePath, file.Mode())
 			continue
 		}
-		os.MkdirAll(filepath.Dir(filePath), 0644)
+		os.MkdirAll(filepath.Dir(filePath), 0750)
 
 		fileReader, err := file.Open()
 		if err != nil {
@@ -151,7 +151,7 @@ func ScanZip(archive, tmpDir string, sizeLimit uint64, scanCall func(filename st
 			os.MkdirAll(filePath, file.Mode())
 			continue
 		}
-		os.MkdirAll(filepath.Dir(filePath), 0644)
+		os.MkdirAll(filepath.Dir(filePath), 0750)
 
 		fileReader, err := file.Open()
 		if err != nil {
