@@ -179,7 +179,7 @@ func ScanZip(archive, tmpDir string, sizeLimit uint64, scanCall func(filename st
 	return nil
 }
 
-func ScanZipM(archive string, sizeLimit uint64, scanCall func(filename string, r io.Reader) error) error {
+func ScanZipM(archive string, sizeLimit uint64, scanCall func(f *zip.File) error) error {
 	if sizeLimit == 0 {
 		sizeLimit = DEFAULT_UNZIP_LIMIT
 	}
@@ -198,12 +198,7 @@ func ScanZipM(archive string, sizeLimit uint64, scanCall func(filename string, r
 			continue
 		}
 
-		fileReader, err := file.Open()
-		if err != nil {
-			return err
-		}
-		defer fileReader.Close()
-		err = scanCall(file.Name, fileReader)
+		err = scanCall(file)
 		if err != nil {
 			return err
 		}
