@@ -178,3 +178,34 @@ func ScanZip(archive, tmpDir string, sizeLimit uint64, scanCall func(filename st
 	}
 	return nil
 }
+
+func ScanZipM(archive string, sizeLimit uint64, scanCall func(filename string, r io.Reader) error) error {
+	if sizeLimit == 0 {
+		sizeLimit = DEFAULT_UNZIP_LIMIT
+	}
+	reader, err := zip.OpenReader(archive)
+	if err != nil {
+		return err
+	}
+	defer reader.Close()
+
+	if ZipSize(reader) > sizeLimit {
+		return errors.New("ZIP UNCOMPRESS OVERLIMIT")
+	}
+
+	for _, file := range reader.File {
+		filePath := filepath.Join(nTmp, file.Name)
+		filePath = CleanFileName(nTmp, filePath)
+
+		fileReader, err := file.Open()
+		if err != nil {
+			return err
+		}
+		defer fileReader.Close()
+		err = scanCall(filePath, fileReader)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
