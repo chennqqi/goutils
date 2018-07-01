@@ -194,15 +194,16 @@ func ScanZipM(archive string, sizeLimit uint64, scanCall func(filename string, r
 	}
 
 	for _, file := range reader.File {
-		filePath := filepath.Join(nTmp, file.Name)
-		filePath = CleanFileName(nTmp, filePath)
+		if file.FileInfo().IsDir() {
+			continue
+		}
 
 		fileReader, err := file.Open()
 		if err != nil {
 			return err
 		}
 		defer fileReader.Close()
-		err = scanCall(filePath, fileReader)
+		err = scanCall(file.Name, fileReader)
 		if err != nil {
 			return err
 		}
