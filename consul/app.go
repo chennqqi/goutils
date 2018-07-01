@@ -82,7 +82,7 @@ func NewAppWithCustomCfg(cfg interface{}, confName, healthHost string) (*ConsulA
 	return &capp, nil
 }
 
-func NewAppWithCfg(cfg interface{}, confName, healthHost string) (*ConsulApp, error) {
+func NewAppWithCfg(cfg interface{}, healthHost string) (*ConsulApp, error) {
 	return NewAppWithCustomCfg(cfg, "", healthHost)
 }
 
