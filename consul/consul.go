@@ -13,6 +13,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+var (
+	ErrNotExist = errors.New("NOT EXIST")
+)
+
 const (
 	CONSUL_HEALTH_PATH = "health"
 )
@@ -78,12 +82,13 @@ func (c *ConsulOperator) Ping() error {
 func (c *ConsulOperator) Get(name string) ([]byte, error) {
 	consul := c.consul
 	kv := consul.KV()
+
 	pair, _, err := kv.Get(name, nil)
 	if err != nil {
 		return nil, err
 	}
 	if pair == nil {
-		return nil, errors.New("NOT EXIST")
+		return nil, ErrNotExist
 	}
 	return pair.Value, nil
 }
