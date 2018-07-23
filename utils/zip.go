@@ -99,7 +99,7 @@ func UnzipSafe(archive, target string, sizeLimit uint64) error {
 		filePath = CleanFileName(target, filePath)
 
 		if file.FileInfo().IsDir() {
-			os.MkdirAll(filePath, file.Mode())
+			os.MkdirAll(filePath, 0750)
 			continue
 		}
 		os.MkdirAll(filepath.Dir(filePath), 0750)
