@@ -164,3 +164,22 @@ func GetUploadFileSize(upfile multipart.File) (int64, error) {
 	}
 	return 0, errors.New("not found stat and size interface")
 }
+
+//在主机拥有多个IP地址时，返回能够连通对端网络的自身主机IP
+func GetLocalConnectIP(proto string, addr string) (string, error) {
+	if proto == "" {
+		proto = "tcp"
+	}
+	conn, err := net.Dial(proto, addr)
+	if err != nil {
+		return "", nil
+	}
+	defer conn.Close()
+	laddr := conn.LocalAddr().String()
+	var rip string
+	v := strings.Split(laddr, ":")
+	if len(v) > 1 {
+		rip = v[0]
+	}
+	return rip, nil
+}
