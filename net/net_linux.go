@@ -32,7 +32,7 @@ func netHexToIPMask(s string) net.IPMask {
 func GetDefaultGateWay() (net.IP, error) {
 	txt, err := ioutil.ReadFile("/proc/net/route")
 	if err != nil {
-		return "", err
+		return net.ParseIP("0.0.0.0"), err
 	}
 	matched := gateWayExp.FindAllSubmatchIndex(txt, -1)
 	if len(matched) > 0 {
@@ -65,7 +65,7 @@ func GetDefaultGateWay() (net.IP, error) {
 func GetGateWayByNic(nicName string) (net.IP, error) {
 	txt, err := ioutil.ReadFile("/proc/net/route")
 	if err != nil {
-		return "", err
+		return net.ParseIP("0.0.0.0"), err
 	}
 	matched := gateWayExp.FindAllSubmatchIndex(txt, -1)
 	if len(matched) > 0 {
@@ -85,13 +85,13 @@ func GetGateWayByNic(nicName string) (net.IP, error) {
 			voff++
 			gw := string(txt[matched[i][voff*2]:matched[i][voff*2+1]])
 			item.Gateway = netHexToIPAddr(gw)
-			if nic == nicName {
-				return item.Gateway
+			if item.Iface == nicName {
+				return item.Gateway, nil
 			}
 		}
 	}
 
-	return "", ErrNotFound
+	return net.ParseIP("0.0.0.0"), ErrNotFound
 }
 
 func ListGateWay() ([]*RouteItem, error) {
@@ -132,7 +132,7 @@ func ListGateWay() ([]*RouteItem, error) {
 
 			voff++
 			use := string(txt[matched[i][voff*2]:matched[i][voff*2+1]])
-			fmt.Sscan(Use, "%d", &item.Use)
+			fmt.Sscan(use, "%d", &item.Use)
 
 			voff++
 			metric := string(txt[matched[i][voff*2]:matched[i][voff*2+1]])
@@ -140,9 +140,7 @@ func ListGateWay() ([]*RouteItem, error) {
 
 			voff++
 			mask := string(txt[matched[i][voff*2]:matched[i][voff*2+1]])
-			maskValue := netHexToIPAddrValue(mask)
-			item.Mask = net.IPv4Mask(maskValue&0xFF, (maskValue>>8)&0xFF,
-				(maskValue>>16)&0xFF, (maskValue>>24)&0xFF)
+			item.Mask = netHexToIPMask(mask)
 
 			voff++
 			mtu := string(txt[matched[i][voff*2]:matched[i][voff*2+1]])
