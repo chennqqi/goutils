@@ -24,7 +24,7 @@ func netHexToIPAddr(s string) net.IP {
 
 func netHexToIPMask(s string) net.IPMask {
 	var v uint32
-	fmt.Scanf(s, "%x", &v)
+	fmt.Sscanf(s, "%x", &v)
 	return net.IPv4Mask(byte(v&0xFF), byte((v>>8)&0xFF),
 		byte((v>>16)&0xFF), byte((v>>24)&0xFF))
 }
