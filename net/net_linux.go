@@ -16,7 +16,7 @@ var (
 
 func netHexToIPAddr(s string) net.IP {
 	var v uint32
-	fmt.Scanf(s, "%x", &v)
+	fmt.Sscanf(s, "%x", &v)
 	ipstr := fmt.Sprintf("%d.%d.%d.%d",
 		v&0xFF, (v>>8)&0xFF, (v>>16)&0xFF, (v>>24)&0xFF)
 	return net.ParseIP(ipstr)
