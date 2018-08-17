@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	METRIX_URL = "/debug/vars"
+	METRICS_URL = "/debug/vars"
 )
 
 //Metrics Handler
