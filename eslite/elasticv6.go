@@ -62,9 +62,9 @@ func (es *ElasticClientV6) Begin() error {
 	return nil
 }
 
-func (es *ElasticClientV6) Commit(pipeline string) error {
+func (es *ElasticClientV6) Commit() error {
 	//	log.Println("DOBEFORE bulkRequest:NumberOfActions", es.bkt.NumberOfActions())
-	es.bkt.Pipeline(pipeline)
+	es.bkt.Pipeline(es.pipeline)
 	bulkResponse, err := es.bkt.Do(context.Background())
 	if err != nil {
 		log.Println(err)
