@@ -86,3 +86,7 @@ func (es *ElasticClientV1) WriteDirect(index string, id string,
 	_, err := es.client.Index().Index(index).Type(typ).Id(id).BodyJson(v).Do()
 	return err
 }
+
+func (es *ElasticClientV1) SetPipeline(pipeline string) error {
+	return ErrNotSupportPipeline
+}

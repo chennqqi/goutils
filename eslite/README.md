@@ -59,3 +59,7 @@ es write wrapper
 ## note
 
 disable sniffing ElasticClientV2 ElasticClientV3 ElasticClientV5
+
+## history
+
+2018/08/20 add SetPipeline function, only support ElasticClientV5, ElasticClientV6

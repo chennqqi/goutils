@@ -59,9 +59,8 @@ func (es *ElasticClientV3) Begin() error {
 	return nil
 }
 
-func (es *ElasticClientV3) Commit() error {
+func (es *ElasticClientV3) Commit(pipeline string) error {
 	log.Println("DOBEFORE bulkRequest:NumberOfActions", es.bkt.NumberOfActions())
-
 	bulkResponse, err := es.bkt.Do()
 	if err != nil {
 		log.Println(err)
@@ -82,4 +81,8 @@ func (es *ElasticClientV3) WriteDirect(index string, id string,
 	typ string, v interface{}) error {
 	_, err := es.client.Index().Index(index).Type(typ).Id(id).BodyJson(v).Do()
 	return err
+}
+
+func (es *ElasticClientV3) SetPipeline(pipeline string) error {
+	return ErrNotSupportPipeline
 }

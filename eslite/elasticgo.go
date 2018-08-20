@@ -71,3 +71,7 @@ func (es *ElasticGoClient) WriteDirect(index string, id string,
 	_, err := es.client.Index(index, typ, id, nil, v)
 	return err
 }
+
+func (es *ElasticGoClient) SetPipeline(pipeline string) error {
+	return ErrNotSupportPipeline
+}

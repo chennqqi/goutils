@@ -10,8 +10,9 @@ import (
 )
 
 type ElasticClientV5 struct {
-	client *elastic.Client
-	bkt    *elastic.BulkService
+	client   *elastic.Client
+	bkt      *elastic.BulkService
+	pipeline string
 }
 
 func (es *ElasticClientV5) Open(host string, port int, usrName, pass string) error {
@@ -64,7 +65,7 @@ func (es *ElasticClientV5) Begin() error {
 
 func (es *ElasticClientV5) Commit() error {
 	//	log.Println("DOBEFORE bulkRequest:NumberOfActions", es.bkt.NumberOfActions())
-
+	es.bkt.Pipeline(es.pipeline)
 	bulkResponse, err := es.bkt.Do(context.Background())
 	if err != nil {
 		log.Println(err)
@@ -85,4 +86,9 @@ func (es *ElasticClientV5) WriteDirect(index string, id string,
 	typ string, v interface{}) error {
 	_, err := es.client.Index().Index(index).Type(typ).Id(id).BodyJson(v).Do(context.Background())
 	return err
+}
+
+func (es *ElasticClientV5) SetPipeline(pipeline string) error {
+	es.pipeline = pipeline
+	return nil
 }

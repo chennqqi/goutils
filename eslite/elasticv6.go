@@ -11,8 +11,9 @@ import (
 )
 
 type ElasticClientV6 struct {
-	client *elastic.Client
-	bkt    *elastic.BulkService
+	client   *elastic.Client
+	bkt      *elastic.BulkService
+	pipeline string
 }
 
 func (es *ElasticClientV6) Open(host string, port int, usrName, pass string) error {
@@ -52,10 +53,8 @@ func (es *ElasticClientV6) Open(host string, port int, usrName, pass string) err
 
 func (es *ElasticClientV6) Write(index string, id string,
 	typ string, v interface{}) error {
-
 	es.bkt.Add(elastic.NewBulkIndexRequest().Index(
 		index).Type(typ).Id(id).Doc(v))
-
 	return nil
 }
 
@@ -63,9 +62,9 @@ func (es *ElasticClientV6) Begin() error {
 	return nil
 }
 
-func (es *ElasticClientV6) Commit() error {
+func (es *ElasticClientV6) Commit(pipeline string) error {
 	//	log.Println("DOBEFORE bulkRequest:NumberOfActions", es.bkt.NumberOfActions())
-
+	es.bkt.Pipeline(pipeline)
 	bulkResponse, err := es.bkt.Do(context.Background())
 	if err != nil {
 		log.Println(err)
@@ -82,8 +81,13 @@ func (es *ElasticClientV6) Close() {
 	// Use the IndexExists service to check if a specified index exists.
 }
 
-func (es *ElasticClientV6) WriteDirect(index string, id string,
-	typ string, v interface{}) error {
-	_, err := es.client.Index().Index(index).Type(typ).Id(id).BodyJson(v).Do(context.Background())
+func (es *ElasticClientV6) WriteDirect(index, id, typ string,
+	v interface{}) error {
+	_, err := es.client.Index().Pipeline(es.pipeline).Index(index).Type(typ).Id(id).BodyJson(v).Do(context.Background())
 	return err
+}
+
+func (es *ElasticClientV6) SetPipeline(pipeline string) error {
+	es.pipeline = pipeline
+	return nil
 }
