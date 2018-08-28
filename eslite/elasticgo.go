@@ -14,6 +14,7 @@ type ElasticGoClient struct {
 	bkt    *elastigo.BulkIndexer
 }
 
+// open: connect with elasticsearch by user:pass@host:port
 func (es *ElasticGoClient) Open(host string, port int, userName, pass string) error {
 	c := elastigo.NewConn()
 	log.SetFlags(log.LstdFlags)
@@ -28,6 +29,7 @@ func (es *ElasticGoClient) Open(host string, port int, userName, pass string) er
 	return nil
 }
 
+//patch write elastic document
 func (es *ElasticGoClient) Write(index string, id string,
 	typ string, v interface{}) error {
 	err := es.bkt.Index(index, typ, id, "", "", nil, v)
@@ -37,6 +39,7 @@ func (es *ElasticGoClient) Write(index string, id string,
 	return err
 }
 
+//begin patch write
 func (es *ElasticGoClient) Begin() error {
 	indexer := es.client.NewBulkIndexer(10)
 	indexer.BufferDelayMax = 60 * time.Second
@@ -57,21 +60,25 @@ func (es *ElasticGoClient) Begin() error {
 	return nil
 }
 
+//commit patch write
 func (es *ElasticGoClient) Commit() error {
 	es.bkt.Stop()
 	return nil
 }
 
+//close elasticsearch connection
 func (es *ElasticGoClient) Close() {
 	es.client.Close()
 }
 
+//write a document directly
 func (es *ElasticGoClient) WriteDirect(index string, id string,
 	typ string, v interface{}) error {
 	_, err := es.client.Index(index, typ, id, nil, v)
 	return err
 }
 
+//set elasticsearch pipeline, expect elasticsearch version>=5.0
 func (es *ElasticGoClient) SetPipeline(pipeline string) error {
 	return ErrNotSupportPipeline
 }

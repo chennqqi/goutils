@@ -72,6 +72,7 @@ package utils
 //  return false;
 //}
 
+//wirdcard match, see https://en.wikipedia.org/wiki/Wild_card
 func WildcardCmp(txt, pattern string) bool {
 	txtLen := len(txt)
 	patternLen := len(pattern)

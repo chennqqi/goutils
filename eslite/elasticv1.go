@@ -14,6 +14,7 @@ type ElasticClientV1 struct {
 	bkt    *elastic.BulkService
 }
 
+// open: connect with elasticsearch by user:pass@host:port
 func (es *ElasticClientV1) Open(host string, port int, userName, pass string) error {
 	url := fmt.Sprintf("http://%s:%d", host, port)
 	if strings.HasPrefix(host, "http://") || strings.HasPrefix(host, "https://") {
@@ -49,6 +50,7 @@ func (es *ElasticClientV1) Open(host string, port int, userName, pass string) er
 	return nil
 }
 
+//patch write elastic document
 func (es *ElasticClientV1) Write(index string, id string,
 	typ string, v interface{}) error {
 
@@ -58,10 +60,12 @@ func (es *ElasticClientV1) Write(index string, id string,
 	return nil
 }
 
+//begin patch write
 func (es *ElasticClientV1) Begin() error {
 	return nil
 }
 
+//commit patch write
 func (es *ElasticClientV1) Commit() error {
 	log.Println("DOBEFORE bulkRequest:NumberOfActions", es.bkt.NumberOfActions())
 
@@ -77,16 +81,18 @@ func (es *ElasticClientV1) Commit() error {
 	return err
 }
 
+//close elasticsearch connection
 func (es *ElasticClientV1) Close() {
-
 }
 
+//write a document directly
 func (es *ElasticClientV1) WriteDirect(index string, id string,
 	typ string, v interface{}) error {
 	_, err := es.client.Index().Index(index).Type(typ).Id(id).BodyJson(v).Do()
 	return err
 }
 
+//set elasticsearch pipeline, expect es version>5.0
 func (es *ElasticClientV1) SetPipeline(pipeline string) error {
 	return ErrNotSupportPipeline
 }

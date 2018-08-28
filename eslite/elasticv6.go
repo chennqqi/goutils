@@ -16,6 +16,7 @@ type ElasticClientV6 struct {
 	pipeline string
 }
 
+// open: connect with elasticsearch by user:pass@host:port
 func (es *ElasticClientV6) Open(host string, port int, usrName, pass string) error {
 	url := fmt.Sprintf("http://%s:%d", host, port)
 	if strings.HasPrefix(host, "http://") || strings.HasPrefix(host, "https://") {
@@ -51,6 +52,7 @@ func (es *ElasticClientV6) Open(host string, port int, usrName, pass string) err
 	return nil
 }
 
+//patch write elastic document
 func (es *ElasticClientV6) Write(index string, id string,
 	typ string, v interface{}) error {
 	es.bkt.Add(elastic.NewBulkIndexRequest().Index(
@@ -58,10 +60,12 @@ func (es *ElasticClientV6) Write(index string, id string,
 	return nil
 }
 
+//begin patch write
 func (es *ElasticClientV6) Begin() error {
 	return nil
 }
 
+//commit patch write
 func (es *ElasticClientV6) Commit() error {
 	//	log.Println("DOBEFORE bulkRequest:NumberOfActions", es.bkt.NumberOfActions())
 	es.bkt.Pipeline(es.pipeline)
@@ -77,16 +81,19 @@ func (es *ElasticClientV6) Commit() error {
 	return err
 }
 
+//close elasticsearch connection
 func (es *ElasticClientV6) Close() {
 	// Use the IndexExists service to check if a specified index exists.
 }
 
+//write a document directly
 func (es *ElasticClientV6) WriteDirect(index, id, typ string,
 	v interface{}) error {
 	_, err := es.client.Index().Pipeline(es.pipeline).Index(index).Type(typ).Id(id).BodyJson(v).Do(context.Background())
 	return err
 }
 
+//set elasticsearch pipeline
 func (es *ElasticClientV6) SetPipeline(pipeline string) error {
 	es.pipeline = pipeline
 	return nil

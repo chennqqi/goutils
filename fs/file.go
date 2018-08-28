@@ -2,10 +2,11 @@ package fs
 
 import (
 	"errors"
-	"io/ioutil"
 	"os"
-	"path/filepath"
 	"strings"
+
+	"io/ioutil"
+	"path/filepath"
 )
 
 func buildCheckSuffix(suffix string) func(string) bool {
