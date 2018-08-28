@@ -16,6 +16,9 @@ func IsElfUpxed(appName string) (bool, error) {
 
 	defer f.Close()
 	_elf, err := elf.NewFile(f)
+	if err != nil {
+		return false, err
+	}
 
 	// Read and decode ELF identifier
 	var ident [16]uint8

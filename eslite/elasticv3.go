@@ -8,6 +8,7 @@ import (
 	"gopkg.in/olivere/elastic.v3"
 )
 
+//ElasticClientV3 object
 type ElasticClientV3 struct {
 	client *elastic.Client
 	bkt    *elastic.BulkService

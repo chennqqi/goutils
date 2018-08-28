@@ -39,6 +39,7 @@ func GetExternalIP() (string, error) {
 	return string(txt), nil
 }
 
+//将整数IP转换为Go
 func Inet_ntoa(ipnr int64) net.IP {
 	var bytes [4]byte
 	bytes[0] = byte(ipnr & 0xFF)
@@ -49,6 +50,7 @@ func Inet_ntoa(ipnr int64) net.IP {
 	return net.IPv4(bytes[3], bytes[2], bytes[1], bytes[0])
 }
 
+//将IP转换为整数值
 func Inet_aton(ipnr net.IP) int64 {
 	bits := strings.Split(ipnr.String(), ".")
 
@@ -67,6 +69,7 @@ func Inet_aton(ipnr net.IP) int64 {
 	return sum
 }
 
+//返回是否是公网IP
 func IsPublicIP(IP net.IP) bool {
 	if IP.IsLoopback() || IP.IsLinkLocalMulticast() || IP.IsLinkLocalUnicast() {
 		return false

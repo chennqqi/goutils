@@ -265,6 +265,7 @@ func MysqlDump(opt DumpOpt) error {
 			return fmt.Errorf("%v", err)
 		}
 		err = dump2csv(tables, q, opt.DumpDir, compressFiles, skipHeader, csvDialect)
+		_ = err
 	}
 
 	if err != nil {
