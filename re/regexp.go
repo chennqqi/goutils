@@ -6,7 +6,7 @@ import (
 	"regexp"
 )
 
-//regexp group to map like python re.groups()
+//RegexpGroup: regexp group to map like python re.groups()
 func RegexpGroup(exp *regexp.Regexp, text string) map[string]string {
 	match := exp.FindStringSubmatch(text)
 	result := make(map[string]string)

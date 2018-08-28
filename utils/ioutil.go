@@ -5,6 +5,7 @@ import (
 	"os"
 )
 
+//TempFileName: new a temp filename in `dir` with `prefix`
 func TempFileName(dir, prefix string) (string, error) {
 	f, err := ioutil.TempFile(dir, prefix)
 	if err != nil {

@@ -8,10 +8,8 @@ import (
 )
 
 /*
-	return: return `this program`'s basename, if run in windows,
-	returned string auto removed ".exe"
-*/
-
+ApplicationName: return `this program`'s basename, if run in windows,
+returned string auto removed ".exe"*/
 func ApplicationName() string {
 	baseName := filepath.Base(os.Args[0])
 	if runtime.GOOS == "windows" {

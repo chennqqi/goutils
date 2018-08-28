@@ -10,6 +10,7 @@ import (
 	"golang.org/x/net/context"
 )
 
+//ElasticClientV6 object
 type ElasticClientV6 struct {
 	client   *elastic.Client
 	bkt      *elastic.BulkService
