@@ -9,7 +9,7 @@ import (
 func TestListRoute(t *testing.T) {
 	r, e := ListGateWay()
 	assert.Nil(t, e)
-	for _, v := range v {
+	for _, v := range r {
 		t.Log(v)
 	}
 }

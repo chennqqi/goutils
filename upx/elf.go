@@ -44,7 +44,7 @@ func IsElfUpxed(appName string) (bool, error) {
 		f.Seek(int64(hdr.Phoff)+int64(hdr.Phentsize)*int64(hdr.Phnum), os.SEEK_SET)
 
 	default:
-		return false, fmt.Errorf("unsupport class", _elf.Class.String())
+		return false, fmt.Errorf("unsupport class: %v", _elf.Class.String())
 	}
 	var upxMagic [8]byte
 	if _, err := f.Read(upxMagic[0:]); err != nil {
