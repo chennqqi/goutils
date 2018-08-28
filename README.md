@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/chennqqi/goutils.svg?branch=master)](https://travis-ci.org/chennqqi/goutils) [![GoDoc](https://godoc.org/github.com/chennqqi/goutils?status.svg)](https://godoc.org/github.com/chennqqi/goutils)  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://travis-ci.org/chennqqi/goutils.svg?branch=master)](https://travis-ci.org/chennqqi/goutils) [![GoDoc](https://godoc.org/github.com/chennqqi/goutils?status.svg)](https://godoc.org/github.com/chennqqi/goutils)  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Go Report Card](https://goreportcard.com/badge/github.com/chennqqi/goutils)](https://goreportcard.com/report/github.com/chennqqi/goutils)
 
 # goutils
 
