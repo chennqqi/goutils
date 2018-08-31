@@ -4,3 +4,6 @@ go:
 #  - "1.8"
   - "1.10.x"
 script: go test -race -coverprofile=coverage.txt -covermode=atomic github.com/chennqqi/goutils/net
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
