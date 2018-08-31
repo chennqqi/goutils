@@ -3,4 +3,4 @@ go:
 #  - "1.7"
 #  - "1.8"
   - "1.10.x"
-script: go test github.com/chennqqi/goutils/net
+script: go test -race -coverprofile=coverage.txt -covermode=atomic github.com/chennqqi/goutils/net
