@@ -9,6 +9,10 @@ import (
 	"path/filepath"
 )
 
+func IsSymLink(m os.FileMode) bool {
+	return (m & os.ModeSymlink) == os.ModeSymlink
+}
+
 func buildCheckSuffix(suffix string) func(string) bool {
 	suffix = strings.ToUpper(suffix) //忽略后缀匹配的大小写
 	if suffix == "" {

@@ -49,11 +49,11 @@ func NewAppWithCustomCfg(cfg interface{}, confName, healthHost string) (*ConsulA
 		if err == nil {
 			yaml.Unmarshal(txt, cfg)
 		} else {
-			logrus.Error("[main:main] Load yml from consul error ", err)
-			err = yamlconfig.Load(cfg, "")
+			logrus.Errorf("[main:main] Load conf(%v) from consul error: %v", confName, err)
+			err = yamlconfig.Load(cfg, confName)
 			if err != nil {
 				fmt.Println("make empty local config")
-				yamlconfig.Save(cfg, "")
+				yamlconfig.Save(cfg, confName)
 				return nil, errors.New("make empty local config")
 			}
 		}
