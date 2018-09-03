@@ -25,31 +25,27 @@ func NewAppWithCustomCfg(cfg interface{}, confName, healthHost string) (*ConsulA
 	consulapi := NewConsulOp("")
 	consulapi.Fix()
 	capp.ConsulOperator = consulapi
+	if confName == "" {
+		confName = fmt.Sprintf("%s.yml", appName)
+	}
 
 	if err := consulapi.Ping(); err != nil {
-		logrus.Error("[main] ping consul failed, try local")
-
-		if confName == "" {
-			confName = fmt.Sprintf("%s.yml", appName)
-		}
+		logrus.Error("[consul/app.go]  ping consul failed, try local")
 		err := yamlconfig.Load(cfg, confName)
 		if os.IsNotExist(err) {
 			fmt.Println("configure not exist, make default")
 			yamlconfig.Save(cfg, confName)
 			return nil, err
 		} else if err != nil {
-			logrus.Error("[main:main] Load yml config error")
+			logrus.Errorf("[consul/app.go] Load %v config from local error: %v", confName, err)
 			return nil, err
 		}
 	} else {
-		if confName == "" {
-			confName = fmt.Sprintf("config/%s.yml", appName)
-		}
 		txt, err := consulapi.Get(confName)
 		if err == nil {
 			yaml.Unmarshal(txt, cfg)
 		} else {
-			logrus.Errorf("[main:main] Load conf(%v) from consul error: %v", confName, err)
+			logrus.Errorf("[consul/app.go] Load conf(%v) from consul error: %v", confName, err)
 			err = yamlconfig.Load(cfg, confName)
 			if err != nil {
 				fmt.Println("make empty local config")
