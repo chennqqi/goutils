@@ -25,11 +25,12 @@ func NewAppWithCustomCfg(cfg interface{}, confName, healthHost string) (*ConsulA
 	consulapi := NewConsulOp("")
 	consulapi.Fix()
 	capp.ConsulOperator = consulapi
-	if confName == "" {
-		confName = fmt.Sprintf("%s.yml", appName)
-	}
 
 	if err := consulapi.Ping(); err != nil {
+		if confName == "" {
+			confName = fmt.Sprintf("%s.yml", appName)
+		}
+
 		logrus.Error("[consul/app.go]  ping consul failed, try local")
 		err := yamlconfig.Load(cfg, confName)
 		if os.IsNotExist(err) {
@@ -41,6 +42,10 @@ func NewAppWithCustomCfg(cfg interface{}, confName, healthHost string) (*ConsulA
 			return nil, err
 		}
 	} else {
+		if confName == "" {
+			confName = fmt.Sprintf("config/%s.yml", appName)
+		}
+
 		txt, err := consulapi.Get(confName)
 		if err == nil {
 			yaml.Unmarshal(txt, cfg)
