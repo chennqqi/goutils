@@ -44,6 +44,8 @@ func NewAppWithCustomCfg(cfg interface{}, confName, healthHost string) (*ConsulA
 	} else {
 		if confName == "" {
 			confName = fmt.Sprintf("config/%s.yml", appName)
+		} else if !strings.HasPrefix(confName, `config/`) {
+			confName = fmt.Sprintf("config/%s", confName)
 		}
 
 		txt, err := consulapi.Get(confName)
