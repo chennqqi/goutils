@@ -11,7 +11,7 @@ func RegexpGroup(exp *regexp.Regexp, text string) map[string]string {
 	match := exp.FindStringSubmatch(text)
 	result := make(map[string]string)
 	for i, name := range exp.SubexpNames() {
-		if i != 0 && name != "" {
+		if i > 0 && i <= len(match) {
 			result[name] = match[i]
 		}
 	}
