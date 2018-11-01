@@ -65,8 +65,8 @@ func getNetworkParams() (*IpAddapterParams, error) {
 	return a, nil
 }
 
-func GetLocalNS() (NSRecords, error) {
-	var ns NSRecords
+func GetLocalNS() (NSServers, error) {
+	var ns NSServers
 	var rerr error
 
 	//windows only support one couple dns
@@ -75,11 +75,11 @@ func GetLocalNS() (NSRecords, error) {
 		return ns, err
 	}
 	nsip := strings.Trim(fmt.Sprintf(`%s`, iphelper.DnsServerList.IpAddress.String), "\t ")
-	ns.NSRecord = append(ns.NSRecord, nsip)
+	ns.NSServer = append(ns.NSServer, nsip)
 	pIPAddr := iphelper.DnsServerList.Next
 	for pIPAddr != nil {
 		nsip = strings.Trim(fmt.Sprintf(`%s`, pIPAddr.IpAddress.String), "\t ")
-		ns.NSRecord = append(ns.NSRecord, nsip)
+		ns.NSServer = append(ns.NSServer, nsip)
 		pIPAddr = pIPAddr.Next
 	}
 	return ns, rerr

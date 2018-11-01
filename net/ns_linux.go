@@ -1,11 +1,11 @@
 package net
 
 import (
-	"sort"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"regexp"
+	"sort"
 )
 
 var (
@@ -21,11 +21,11 @@ type nsRecord struct {
 type nsRecords []nsRecord
 
 func (t nsRecords) Less(i, j int) bool { return t[i].Index < t[j].Index }
-func (t nsRecords) Len() int { return len(t)}
-func (t nsRecords) Swap(i, j int) { t[i],t[j] = t[j],t[i]}
+func (t nsRecords) Len() int           { return len(t) }
+func (t nsRecords) Swap(i, j int)      { t[i], t[j] = t[j], t[i] }
 
-func GetRhNsByNic(name string) (NSRecord, error) {
-	var ns NSRecord
+func GetRhNsByNic(name string) (NSServers, error) {
+	var ns NSServers
 	fname := fmt.Sprintf("/etc/sysconfig/network-scripts/ifcfg-%v", name)
 	txt, err := ioutil.ReadFile(fname)
 	if err != nil {
@@ -38,21 +38,21 @@ func GetRhNsByNic(name string) (NSRecord, error) {
 		if len(match[i]) >= 6 {
 			var n nsRecord
 			id := string(txt[match[i][2]:match[i][3]])
-			n.Value = string(txt[match[i][4]:match[i][5]])			
+			n.Value = string(txt[match[i][4]:match[i][5]])
 			fmt.Sscanf(id, "%d", &n.Index)
 			recordsList = append(recordsList, n)
 		}
 	}
 	sort.Sort(recordsList)
-	ns = make(NSRecord, len(recordsList))
-	for i:=0;i<len(recordsList);i++{
+	ns = make(NSServer, len(recordsList))
+	for i := 0; i < len(recordsList); i++ {
 		ns[i] = recordsList[i].Value
 	}
 	return ns, ErrNotFound
 }
 
-func GetLocalNS() (NSRecords, error) {
-	var ns NSRecords
+func GetLocalNS() (NSServers, error) {
+	var ns NSServers
 	var rerr error
 
 	//order
@@ -60,7 +60,7 @@ func GetLocalNS() (NSRecords, error) {
 	//2. /etc/sysconfig/network-scripts/ifcfg-eth0
 	//3. /etc/resolv.conf
 	//nic list
-	ns.NicNS = make(map[string]NSRecord)
+	ns.NicNS = make(map[string]NSServer)
 
 	ifaces, err := net.Interfaces()
 	if err == nil {
@@ -78,12 +78,12 @@ func GetLocalNS() (NSRecords, error) {
 	}
 
 	txt, err := ioutil.ReadFile("/etc/resolv.conf")
-		
+
 	//TODO:
 	if err == nil {
 		match := resolvNsExp.FindAllSubmatchIndex(txt, 2)
-		for i:=0; i<len(match); i++{
-			ns.NSRecord = append(ns.NSRecord, string(txt[match[i][2]:match[i][3]]))
+		for i := 0; i < len(match); i++ {
+			ns.NSServer = append(ns.NSServer, string(txt[match[i][2]:match[i][3]]))
 		}
 	} else {
 		rerr = err

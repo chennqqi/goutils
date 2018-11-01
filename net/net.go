@@ -207,6 +207,13 @@ type RouteItem struct {
 	IRTT   int
 }
 
+type NSServer []string
+
+type NSServers struct {
+	NSServer
+	NicNS map[string]NSServer `json:"nicns" yaml:"nicns"` //ns set by nic
+}
+
 func NetHexToIPv4(s string) net.IP {
 	var v uint32
 	fmt.Sscanf(s, "%x", &v)
