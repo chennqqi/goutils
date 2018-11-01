@@ -2,6 +2,7 @@ package net
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"mime/multipart"
 	"net"
@@ -12,6 +13,10 @@ import (
 
 	gnet "github.com/shirou/gopsutil/net"
 	"github.com/tomasen/realip"
+)
+
+var (
+	ErrNotFound = errors.New("NOT FOUND")
 )
 
 // 获取文件大小的接口
@@ -200,4 +205,26 @@ type RouteItem struct {
 	MTU    int
 	Window int
 	IRTT   int
+}
+
+func NetHexToIPv4(s string) net.IP {
+	var v uint32
+	fmt.Sscanf(s, "%x", &v)
+	ipstr := fmt.Sprintf("%d.%d.%d.%d",
+		v&0xFF, (v>>8)&0xFF, (v>>16)&0xFF, (v>>24)&0xFF)
+	return net.ParseIP(ipstr)
+}
+
+func netHexToIPMask(s string) net.IPMask {
+	var v uint32
+	fmt.Sscanf(s, "%x", &v)
+	return net.IPv4Mask(byte(v&0xFF), byte((v>>8)&0xFF),
+		byte((v>>16)&0xFF), byte((v>>24)&0xFF))
+}
+
+func netStringToIPv4Mask(s string) net.IPMask {
+	var a, b, c, d uint32
+	fmt.Sscanf(s, "%d.%d.%d.%d", &a, &b, &c, &d)
+	return net.IPv4Mask(byte(a&0xFF), byte(b&0xFF),
+		byte(c&0xFF), byte(d&0xFF))
 }

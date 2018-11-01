@@ -10,26 +10,10 @@ import (
 )
 
 var (
-	gateWayExp  = regexp.MustCompile(`(?m)^(.*?)\s+(.*?)\s+(.*?)\s+(.*?)\s+(.*?)\s+(.*?)\s+(.*?)\s+(.*?)\s+(.*?)\s+(.*?)\s+(.*?)\s*$`)
-	ErrNotFound = errors.New("NOT FOUND")
+	gateWayExp = regexp.MustCompile(`(?m)^(.*?)\s+(.*?)\s+(.*?)\s+(.*?)\s+(.*?)\s+(.*?)\s+(.*?)\s+(.*?)\s+(.*?)\s+(.*?)\s+(.*?)\s*$`)
 )
 
-func netHexToIPAddr(s string) net.IP {
-	var v uint32
-	fmt.Sscanf(s, "%x", &v)
-	ipstr := fmt.Sprintf("%d.%d.%d.%d",
-		v&0xFF, (v>>8)&0xFF, (v>>16)&0xFF, (v>>24)&0xFF)
-	return net.ParseIP(ipstr)
-}
-
-func netHexToIPMask(s string) net.IPMask {
-	var v uint32
-	fmt.Sscanf(s, "%x", &v)
-	return net.IPv4Mask(byte(v&0xFF), byte((v>>8)&0xFF),
-		byte((v>>16)&0xFF), byte((v>>24)&0xFF))
-}
-
-func GetDefaultGateWay() (net.IP, error) {
+func GetDefaultGateway() (net.IP, error) {
 	txt, err := ioutil.ReadFile("/proc/net/route")
 	if err != nil {
 		return net.ParseIP("0.0.0.0"), err
@@ -62,7 +46,7 @@ func GetDefaultGateWay() (net.IP, error) {
 	return net.ParseIP("0.0.0.0"), ErrNotFound
 }
 
-func GetGateWayByNic(nicName string) (net.IP, error) {
+func GetGatewayByNic(nicName string) (net.IP, error) {
 	txt, err := ioutil.ReadFile("/proc/net/route")
 	if err != nil {
 		return net.ParseIP("0.0.0.0"), err
@@ -94,7 +78,7 @@ func GetGateWayByNic(nicName string) (net.IP, error) {
 	return net.ParseIP("0.0.0.0"), ErrNotFound
 }
 
-func ListGateWay() ([]*RouteItem, error) {
+func ListGateway() ([]*RouteItem, error) {
 	txt, err := ioutil.ReadFile("/proc/net/route")
 	if err != nil {
 		return nil, err
