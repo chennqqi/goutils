@@ -24,8 +24,8 @@ func (t nsRecords) Less(i, j int) bool { return t[i].Index < t[j].Index }
 func (t nsRecords) Len() int           { return len(t) }
 func (t nsRecords) Swap(i, j int)      { t[i], t[j] = t[j], t[i] }
 
-func GetRhNsByNic(name string) (NSServers, error) {
-	var ns NSServers
+func GetRhNsByNic(name string) (NSServer, error) {
+	var ns NSServer
 	fname := fmt.Sprintf("/etc/sysconfig/network-scripts/ifcfg-%v", name)
 	txt, err := ioutil.ReadFile(fname)
 	if err != nil {
