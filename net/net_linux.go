@@ -2,7 +2,6 @@
 package net
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -30,12 +29,12 @@ func GetDefaultGateway() (net.IP, error) {
 			//dst hex string
 			voff++
 			dst := string(txt[matched[i][voff*2]:matched[i][voff*2+1]])
-			item.Dst = netHexToIPAddr(dst)
+			item.Dst = NetHexToIPv4(dst)
 
 			//gateway hex string
 			voff++
 			gw := string(txt[matched[i][voff*2]:matched[i][voff*2+1]])
-			item.Gateway = netHexToIPAddr(gw)
+			item.Gateway = NetHexToIPv4(gw)
 
 			if item.Dst.String() == "0.0.0.0" {
 				return item.Gateway, nil
@@ -63,12 +62,12 @@ func GetGatewayByNic(nicName string) (net.IP, error) {
 			//dst hex string
 			voff++
 			dst := string(txt[matched[i][voff*2]:matched[i][voff*2+1]])
-			item.Dst = netHexToIPAddr(dst)
+			item.Dst = NetHexToIPv4(dst)
 
 			//gateway hex string
 			voff++
 			gw := string(txt[matched[i][voff*2]:matched[i][voff*2+1]])
-			item.Gateway = netHexToIPAddr(gw)
+			item.Gateway = NetHexToIPv4(gw)
 			if item.Iface == nicName {
 				return item.Gateway, nil
 			}
@@ -99,12 +98,12 @@ func ListGateway() ([]*RouteItem, error) {
 			//dst hex string
 			voff++
 			dst := string(txt[matched[i][voff*2]:matched[i][voff*2+1]])
-			item.Dst = netHexToIPAddr(dst)
+			item.Dst = NetHexToIPv4(dst)
 
 			//gateway hex string
 			voff++
 			gw := string(txt[matched[i][voff*2]:matched[i][voff*2+1]])
-			item.Gateway = netHexToIPAddr(gw)
+			item.Gateway = NetHexToIPv4(gw)
 
 			voff++
 			flags := string(txt[matched[i][voff*2]:matched[i][voff*2+1]])

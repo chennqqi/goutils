@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
-	"os"
 	"regexp"
 )
 
@@ -21,9 +20,9 @@ type nsRecord struct {
 
 type nsRecords []nsRecord
 
-func (t nsRecords) Less(i, j) bool { return t[i] < t[j] }
-func (t nsRecords) Len() int return { return len(t)}
-func (t nsRecords) Swap(i, j) { t[i],t[j] = t[j],t[i]}
+func (t nsRecords) Less(i, j int) bool { return t[i].Index < t[j].Index }
+func (t nsRecords) Len() int { return len(t)}
+func (t nsRecords) Swap(i, j int) { t[i],t[j] = t[j],t[i]}
 
 func GetRhNsByNic(name string) (NSRecord, error) {
 	var ns NSRecord
@@ -39,7 +38,7 @@ func GetRhNsByNic(name string) (NSRecord, error) {
 		if len(match[i]) >= 6 {
 			var n nsRecord
 			id := string(txt[match[i][2]:match[i][3]])
-			n.Value := string(txt[match[i][4]:match[i][5]])			
+			n.Value = string(txt[match[i][4]:match[i][5]])			
 			fmt.Sscanf(id, "%d", &n.Index)
 			recordsList = append(recordsList, n)
 		}
@@ -69,7 +68,7 @@ func GetLocalNS() (NSRecords, error) {
 			iface := &ifaces[i]
 			//only support centos/redhat;
 			//TODO: add debian
-			nicns, err = GetRhNsByNic(iface.Name)
+			nicns, err := GetRhNsByNic(iface.Name)
 			if err == nil {
 				ns.NicNS[iface.Name] = nicns
 			}
@@ -83,7 +82,9 @@ func GetLocalNS() (NSRecords, error) {
 	//TODO:
 	if err == nil {
 		match := resolvNsExp.FindAllSubmatchIndex(txt, 2)
-		ns.NSRecord = append(ns.NSRecord, string(txt[match[i][2]:match[i][3]]))
+		for i:=0; i<len(match); i++{
+			ns.NSRecord = append(ns.NSRecord, string(txt[match[i][2]:match[i][3]]))
+		}
 	} else {
 		rerr = err
 	}
