@@ -1,8 +1,10 @@
 package ginutils
 
 import (
-	"errors"
 	"fmt"
+	"strings"
+
+	"github.com/pkg/errors"
 
 	"github.com/gin-gonic/gin"
 )
@@ -48,4 +50,19 @@ func GetQueryfloat64(c *gin.Context, q string) (float64, error) {
 	}
 	_, err := fmt.Sscanf(queryValue, "%f", &v)
 	return v, err
+}
+
+func GetQueryBoolean(c *gin.Context, q string) (bool, error) {
+	queryValue, exist := c.GetQuery(q)
+	if !exist {
+		return false, ErrNotExist
+	}
+	switch strings.ToLower(queryValue) {
+	case "true", "yes", "y":
+		return true, nil
+	case "false", "no", "n":
+		return false, nil
+	}
+
+	return false, errors.Errorf("unexpect value=%v", queryValue)
 }
