@@ -93,6 +93,20 @@ func (c *ConsulOperator) Get(name string) ([]byte, error) {
 	return pair.Value, nil
 }
 
+func (c *ConsulOperator) GetEx(name string) ([]byte, uint64, error) {
+	consul := c.consul
+	kv := consul.KV()
+
+	pair, _, err := kv.Get(name, nil)
+	if err != nil {
+		return nil, 0, err
+	}
+	if pair == nil {
+		return nil, 0, ErrNotExist
+	}
+	return pair.Value, pair.ModifyIndex, nil
+}
+
 func (c *ConsulOperator) Put(name string, value []byte) error {
 	consul := c.consul
 	kv := consul.KV()
@@ -147,8 +161,8 @@ func (c *ConsulOperator) RegisterService() error {
 	consul := c.consul
 	agent := consul.Agent()
 	check := consulapi.AgentServiceCheck{
-		Interval: c.Interval,
-		HTTP:     fmt.Sprintf("http://%s:%d/%s", c.IP, c.Port, c.Path),
+		Interval:                       c.Interval,
+		HTTP:                           fmt.Sprintf("http://%s:%d/%s", c.IP, c.Port, c.Path),
 		DeregisterCriticalServiceAfter: "1m",
 	}
 
