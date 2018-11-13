@@ -49,7 +49,7 @@ func dialer(ctx context.Context, network, address string) (net.Conn, error) {
 	if err == nil {
 		return net, err
 	}
-
+	//skip last
 	for i := 0; i+1 < count; i++ {
 		id++
 		id = id % count
