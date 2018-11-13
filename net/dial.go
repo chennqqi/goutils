@@ -3,7 +3,7 @@ package net
 import (
 	"context"
 	"math/rand"
-	"net"
+	stdnet "net"
 	"sync"
 	"time"
 )
@@ -21,8 +21,8 @@ type Resolver struct {
 	mutex      sync.Mutex
 }
 
-func NewResolver(list []string) *net.Resolver {
-	var r net.Resolver
+func NewResolver(list []string) *stdnet.Resolver {
+	var r stdnet.Resolver
 	r.PreferGo = true
 	r.Dial = dialer
 	return &r
@@ -33,30 +33,30 @@ func UpdateResolvList(list []string) {
 }
 
 func OverrideDefaultResolver(list []string) {
-	var r net.Resolver
+	var r stdnet.Resolver
 	r.PreferGo = true
 	r.Dial = dialer
-	net.DefaultResolver = &r
+	stdnet.DefaultResolver = &r
 }
 
-func dialer(ctx context.Context, network, address string) (net.Conn, error) {
-	d := net.Dialer{}
+func dialer(ctx context.Context, network, address string) (stdnet.Conn, error) {
+	d := stdnet.Dialer{}
 	list := serverList
 
 	count := len(list)
 	id := rand.Intn(count)
-	net, err := d.DialContext(ctx, "udp", list[id])
+	conn, err := d.DialContext(ctx, "udp", list[id])
 	if err == nil {
-		return net, err
+		return conn, err
 	}
 	//skip last
 	for i := 0; i+1 < count; i++ {
 		id++
 		id = id % count
-		net, err = d.DialContext(ctx, "udp", list[id])
+		conn, err = d.DialContext(ctx, "udp", list[id])
 		if err == nil {
-			return net, err
+			return conn, err
 		}
 	}
-	return net, err
+	return conn, err
 }
