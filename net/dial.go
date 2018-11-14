@@ -2,6 +2,7 @@ package net
 
 import (
 	"context"
+	"errors"
 	"math/rand"
 	stdnet "net"
 	"sync"
@@ -36,12 +37,18 @@ func OverrideDefaultResolver(list []string) {
 	var r stdnet.Resolver
 	r.PreferGo = true
 	r.Dial = dialer
+	UpdateResolveList(list)
 	stdnet.DefaultResolver = &r
 }
 
 func dialer(ctx context.Context, network, address string) (stdnet.Conn, error) {
 	d := stdnet.Dialer{}
 	list := serverList
+	if len(list)==1{
+		return d.DialContext(ctx, "udp", list[0])
+	} else if len(list) == 0 {
+		return nil, errors.New("EMPTY DNS LIST")
+	}
 
 	count := len(list)
 	id := rand.Intn(count)
