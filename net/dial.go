@@ -28,7 +28,7 @@ func NewResolver(list []string) *stdnet.Resolver {
 	return &r
 }
 
-func UpdateResolvList(list []string) {
+func UpdateResolveList(list []string) {
 	serverList = list
 }
 
