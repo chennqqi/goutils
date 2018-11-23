@@ -25,7 +25,7 @@ func TestPushPop(t *testing.T) {
 		assert.Equal(t, value, i)
 	}
 	err = list.Pop(&value)
-	assert.NotNil(t, err)
+	assert.Equal(t, err, ErrNil)
 
 	list.Close()
 	err = os.RemoveAll("test")

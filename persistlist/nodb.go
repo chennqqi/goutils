@@ -3,6 +3,7 @@ package persistlist
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 
 	"fmt"
@@ -14,6 +15,8 @@ import (
 const (
 	DEFAULT_KEYNAME = "_perist_chan"
 )
+
+var ErrNil = errors.New("empty")
 
 type PersistList interface {
 	Pop(v interface{}) error
@@ -70,7 +73,12 @@ func (c *nodbList) Len() (int64, error) {
 
 func (c *nodbList) Push(v interface{}) (int64, error) {
 	//write ToDisk
-	txt, _ := json.Marshal(v)
+	txt, err := json.Marshal(v)
+	if err != nil {
+		return -1, err
+	} else if len(txt) == 0 {
+		return -1, ErrNil
+	}
 	return c.db.LPush([]byte(c.key), txt)
 }
 
@@ -79,6 +87,8 @@ func (c *nodbList) Pop(v interface{}) error {
 	txt, err := c.db.RPop([]byte(c.key))
 	if err != nil {
 		return err
+	} else if len(txt) == 0 {
+		return ErrNil
 	}
 	return json.Unmarshal(txt, v)
 }
