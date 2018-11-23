@@ -39,7 +39,7 @@ func NewNodbList(indexDir, keyname string) (PersistList, error) {
 
 	err := os.MkdirAll(cfg.DataDir, 0755)
 	if !os.IsExist(err) && err != nil {
-		fmt.Printf("mkdir leveldb dir failed, error: \n", err)
+		fmt.Println("mkdir leveldb dir failed, error: \n", err)
 		return nil, err
 	}
 
