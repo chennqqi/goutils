@@ -131,14 +131,14 @@ func (c *ConsulOperator) Acquire(key string, stopChan <-chan struct{}) error {
 	if !exist {
 		lock, err = c.consul.LockKey(key)
 		if err != nil {
-			logrus.Error("consul Require Lockkey error ", err)
+			logrus.Error("consul Acquire Lock key error ", err)
 			return err
 		}
 		c.lockmap[key] = lock
 	}
 	_, err = lock.Lock(stopChan)
 	if err != nil {
-		logrus.Error("consul Require lock.Lock error ", err)
+		logrus.Error("consul Acquire lock.Lock error ", err)
 		return err
 	}
 	return nil
@@ -151,7 +151,7 @@ func (c *ConsulOperator) Release(key string) error {
 	}
 	err := lock.Unlock()
 	if err != nil {
-		logrus.Error("consul Require lock.Lock error ", err)
+		logrus.Error("consul Release lock.Lock error ", err)
 		return err
 	}
 	return nil
