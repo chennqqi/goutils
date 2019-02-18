@@ -1,5 +1,5 @@
-//close_linux.go
-//signal notify close event(win:INT,TREM,USR1)
+// none windows
+// +build linux darwin
 package closeevent
 
 import (
