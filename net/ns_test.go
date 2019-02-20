@@ -9,5 +9,5 @@ import (
 func TestGetNs(t *testing.T) {
 	ns, err := GetLocalNS()
 	assert.Nil(t, err)
-	assert.NotEqual(t, len(ns.NSRecord), 0)
+	assert.NotEqual(t, len(ns.NicNS), 0)
 }
