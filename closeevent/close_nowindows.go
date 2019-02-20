@@ -1,5 +1,6 @@
 // none windows
 // +build linux darwin
+
 package closeevent
 
 import (
