@@ -7,7 +7,7 @@ import (
 )
 
 func TestGetNs(t *testing.T) {
-	ns, err := GetLocalNS()
+	_, err := GetLocalNS()
 	assert.Nil(t, err)
-//	assert.NotEqual(t, len(ns.NicNS), 0)
+/	assert.NotEqual(t, len(ns.NicNS), 0)
 }
