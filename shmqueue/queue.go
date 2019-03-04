@@ -2,6 +2,7 @@ package shmqueue
 
 import (
 	"errors"
+	//	"fmt"
 	"sync/atomic"
 	"unsafe"
 )
@@ -36,6 +37,7 @@ func New(segmentSize int, total int) (ShmQueue, error) {
 	q.max = uint64(total)
 	q.buffer = make([]byte, segmentSize*total)
 	q.sem = NewBinarySem()
+	q.each = uint64(segmentSize)
 	return &q, nil
 }
 
@@ -52,7 +54,6 @@ func (q *shmQueue) Push(data []byte) error {
 		return ErrBlockW
 	}
 	// do copy
-	atomic.AddUint64(&q.wIdx, 1)
 
 	offset := q.wIdx % q.max
 
@@ -65,11 +66,18 @@ func (q *shmQueue) Push(data []byte) error {
 	p := unsafe.Pointer(&uLen)
 	p1 := (*[4]byte)(p)
 
+	//fmt.Println("length:", length, uLen, (*p1)[0:])
 	//write data size
-	copy(q.buffer[offset:], (*p1)[0:])
-	copy(q.buffer[offset+4:], data[:length])
+	valueOffset := int(offset * q.each)
+	copy(q.buffer[valueOffset:], (*p1)[0:])
+	copy(q.buffer[valueOffset+4:], data[:length])
+	//fmt.Println("WRITE BUFFER LEN:", uLen, q.buffer[offset:offset+4])
+	//fmt.Println("WRITE BUFFER OFFSET:", offset, q.buffer[valueOffset+4])
 
+	//fmt.Println("w REMAIN:", remain)
+	atomic.AddUint64(&q.wIdx, 1)
 	if remain == 1 {
+		//fmt.Println("semGive")
 		sem.Give(false)
 	}
 	return nil
@@ -80,10 +88,14 @@ func (q *shmQueue) Pop(data []byte) error {
 	var err error
 	for {
 		remain := q.wIdx - q.rIdx
+		//fmt.Println("r REMAIN:", remain)
 		if remain == 0 {
+			//fmt.Println("pop BLOCK")
 			if ok := sem.Take(); !ok {
+				//fmt.Println("EOF")
 				return ErrEOF
 			}
+			//fmt.Println("pop RESUME")
 		} else {
 			offset := q.rIdx % q.max
 
@@ -92,16 +104,21 @@ func (q *shmQueue) Pop(data []byte) error {
 			p1 := (*[4]byte)(p)
 
 			//read data size
-			copy((*p1)[0:], q.buffer[offset:])
+			valueOffset := int(offset * q.each)
+			copy((*p1)[0:], q.buffer[valueOffset:])
 
 			capLen := uint64(cap(data))
+
+			//			fmt.Println("OFFSET:", offset, q.buffer[valueOffset])
+			//			fmt.Println("OFFSET DAT LEN:", uLen)
+
 			if capLen > q.each {
 				capLen = q.each
 			} else if capLen < uint64(uLen) {
 				err = ErrTruncate
 			}
 
-			copy(data, q.buffer[offset+4:offset+4+capLen])
+			copy(data, q.buffer[valueOffset+4:valueOffset+4+int(capLen)])
 			break
 		}
 	}
