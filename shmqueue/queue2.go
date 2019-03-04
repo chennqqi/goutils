@@ -1,25 +1,17 @@
 package shmqueue
 
 import (
-	"errors"
 	"sync/atomic"
 	"unsafe"
 )
 
-var (
-	ErrBlockR   = errors.New("BlockR")
-	ErrBlockW   = errors.New("BlockW")
-	ErrEOF      = errors.New("EOF")
-	ErrTruncate = errors.New("truncate")
-)
-
-type ShmQueue interface {
+type ShmQueue2 interface {
 	Push([]byte) error
 	Pop([]byte) error
 	Destroy()
 }
 
-type shmQueue struct {
+type shmQueue2 struct {
 	rIdx  uint64
 	wIdx  uint64
 	nDrop uint64
@@ -28,22 +20,22 @@ type shmQueue struct {
 
 	buffer []byte
 
-	sem BinarySem
+	sem CounterSem
 }
 
-func New(segmentSize int, total int) (ShmQueue, error) {
-	var q shmQueue
+func NewShmQueue2(segmentSize int, total int) (ShmQueue2, error) {
+	var q shmQueue2
 	q.max = uint64(total)
 	q.buffer = make([]byte, segmentSize*total)
-	q.sem = NewBinarySem()
+	q.sem = NewCounterSem(total, 0)
 	return &q, nil
 }
 
-func (q *shmQueue) Destroy() {
+func (q *shmQueue2) Destroy() {
 	q.sem.Destroy()
 }
 
-func (q *shmQueue) Push(data []byte) error {
+func (q *shmQueue2) Push(data []byte) error {
 	remain := q.wIdx - q.rIdx
 	sem := q.sem
 
@@ -69,48 +61,42 @@ func (q *shmQueue) Push(data []byte) error {
 	copy(q.buffer[offset:], (*p1)[0:])
 	copy(q.buffer[offset+4:], data[:length])
 
-	if remain == 1 {
-		sem.Give(false)
-	}
+	sem.Give(true)
 	return nil
 }
 
-func (q *shmQueue) Pop(data []byte) error {
+func (q *shmQueue2) Pop(data []byte) error {
 	sem := q.sem
 	var err error
 	for {
-		remain := q.wIdx - q.rIdx
-		if remain == 0 {
-			if ok := sem.Take(); !ok {
-				return ErrEOF
-			}
-		} else {
-			offset := q.rIdx % q.max
-
-			var uLen uint32
-			p := unsafe.Pointer(&uLen)
-			p1 := (*[4]byte)(p)
-
-			//read data size
-			copy((*p1)[0:], q.buffer[offset:])
-
-			capLen := uint64(cap(data))
-			if capLen > q.each {
-				capLen = q.each
-			} else if capLen < uint64(uLen) {
-				err = ErrTruncate
-			}
-
-			copy(data, q.buffer[offset+4:offset+4+capLen])
-			break
+		if ok := sem.Take(); !ok {
+			return ErrEOF
 		}
+		offset := q.rIdx % q.max
+
+		var uLen uint32
+		p := unsafe.Pointer(&uLen)
+		p1 := (*[4]byte)(p)
+
+		//read data size
+		copy((*p1)[0:], q.buffer[offset:])
+
+		capLen := uint64(cap(data))
+		if capLen > q.each {
+			capLen = q.each
+		} else if capLen < uint64(uLen) {
+			err = ErrTruncate
+		}
+
+		copy(data, q.buffer[offset+4:offset+4+capLen])
+		break
 	}
 
 	atomic.AddUint64(&q.rIdx, 1)
 	return err
 }
 
-func (q *shmQueue) PopNoneblock(data []byte) error {
+func (q *shmQueue2) PopNoneblock(data []byte) error {
 	remain := q.wIdx - q.rIdx
 	if remain == 0 {
 		return ErrBlockR
