@@ -1,154 +1,91 @@
+// +build !cgo
+
 package shmqueue
 
-import (
-	"errors"
-	//	"fmt"
-	"sync/atomic"
-	"unsafe"
-)
+/*
 
-var (
-	ErrBlockR   = errors.New("BlockR")
-	ErrBlockW   = errors.New("BlockW")
-	ErrEOF      = errors.New("EOF")
-	ErrTruncate = errors.New("truncate")
-)
+#define SMQ_OK -1
+#define SMQ_QUIT -2
+#define SMQ_FULL -3
 
-type ShmQueue interface {
-	Push([]byte) error
-	Pop([]byte) error
-	Destroy()
-}
+type shmQueue struct{
+	unsigned char* pBuff;
+	unsigned long long* pRIdx;
+	unsigned long long* pWIdx;
+	unsgined long long each;
+	unsgined long long total;
+	void* pQ;
+}SHM_QUEUE;
 
-type shmQueue struct {
-	rIdx  uint64
-	wIdx  uint64
-	nDrop uint64
-	max   uint64
-	each  uint64
+extern int sqSemTake(SHM_QUEUE* pQ);
 
-	buffer []byte
+extern int sqSemGive(SHM_QUEUE* pQ, block int);
 
-	sem BinarySem
-}
-
-func New(segmentSize int, total int) (ShmQueue, error) {
-	var q shmQueue
-	q.max = uint64(total)
-	q.buffer = make([]byte, segmentSize*total)
-	q.sem = NewBinarySem()
-	q.each = uint64(segmentSize)
-	return &q, nil
-}
-
-func (q *shmQueue) Destroy() {
-	q.sem.Destroy()
-}
-
-func (q *shmQueue) Push(data []byte) error {
-	remain := q.wIdx - q.rIdx
-	sem := q.sem
-
-	if remain == q.max {
-		q.nDrop++
-		return ErrBlockW
+int sqBPush(SHM_QUEUE* pQ, const void* p, unsigned long size) {
+	unsigned long long remain = *pQ->pWIdx - *pQ->pRIdx;
+	if (remain == pQ->total) {
+		return SMQ_FULL;
 	}
-	// do copy
-
-	offset := q.wIdx % q.max
-
-	length := len(data)
-	if uint64(length) > q.each {
-		length = int(q.each)
+	unsigned long long offset = remain % pQ->total;
+	int valueOffset = int(offset * pQ->each);
+	
+	if (size > (unsigned long)pQ->each) {
+		size = pQ->each - 4;
+	}	
+	memcpy(pQ->pBuff+valueOffset, (void*)&size, 4);
+	memcpy(pQ->pBuff+valueOffset+4, p, size);
+	if (__sync_fetch_and_add(pQ->pRIdx, 1) == 1) {
+		sqSemGive(pQ);
 	}
-
-	var uLen = uint32(length)
-	p := unsafe.Pointer(&uLen)
-	p1 := (*[4]byte)(p)
-
-	//fmt.Println("length:", length, uLen, (*p1)[0:])
-	//write data size
-	valueOffset := int(offset * q.each)
-	copy(q.buffer[valueOffset:], (*p1)[0:])
-	copy(q.buffer[valueOffset+4:], data[:length])
-	//fmt.Println("WRITE BUFFER LEN:", uLen, q.buffer[offset:offset+4])
-	//fmt.Println("WRITE BUFFER OFFSET:", offset, q.buffer[valueOffset+4])
-
-	//fmt.Println("w REMAIN:", remain)
-	atomic.AddUint64(&q.wIdx, 1)
-	if remain == 1 {
-		//fmt.Println("semGive")
-		sem.Give(false)
-	}
-	return nil
+	return size;
 }
 
-func (q *shmQueue) Pop(data []byte) error {
-	sem := q.sem
-	var err error
-	for {
-		remain := q.wIdx - q.rIdx
-		//fmt.Println("r REMAIN:", remain)
-		if remain == 0 {
-			//fmt.Println("pop BLOCK")
-			if ok := sem.Take(); !ok {
-				//fmt.Println("EOF")
-				return ErrEOF
+int sqBPop(SHM_QUEUE* pQ, void* p, unsigned long size) {
+	for (;;) {
+		unsigned long long remain = *pQ->pWIdx - *pQ->pRIdx;		
+		if (remain == 0) {
+			int status = sqSemTake(pQ);
+			if (status == SMQ_QUIT) {
+				return SMQ_QUIT;
 			}
-			//fmt.Println("pop RESUME")
 		} else {
-			offset := q.rIdx % q.max
-
-			var uLen uint32
-			p := unsafe.Pointer(&uLen)
-			p1 := (*[4]byte)(p)
-
-			//read data size
-			valueOffset := int(offset * q.each)
-			copy((*p1)[0:], q.buffer[valueOffset:])
-
-			capLen := uint64(cap(data))
-
-			//			fmt.Println("OFFSET:", offset, q.buffer[valueOffset])
-			//			fmt.Println("OFFSET DAT LEN:", uLen)
-
-			if capLen > q.each {
-				capLen = q.each
-			} else if capLen < uint64(uLen) {
-				err = ErrTruncate
+			unsigned long long offset = remain % pQ->total;
+			int valueOffset = int(offset * pQ->each);
+			unsigned long realSize = 0;
+			memcpy((void*)&size, pQ->pBuff+valueOffset, 4);
+			if (size < realSize) {
+				size = realSize
 			}
-
-			copy(data, q.buffer[valueOffset+4:valueOffset+4+int(capLen)])
-			break
+			memcpy(p, pQ->pBuff+valueOffset+4, size);	
+			__sync_fetch_and_add(pQ->pRIdx, 1);
+			return size;
 		}
 	}
+}
+*/
+import "C"
+import "unsafe"
 
-	atomic.AddUint64(&q.rIdx, 1)
-	return err
+//export sqSemTake
+func sqSemTake(p *C.SHM_QUEUE) C.int {
+	q := (*shmQueue)unsafe.Pointer(p.pQ)
+	sem := q.sem
+	
+	if	sem.Take() {
+		return C.SMQ_QUIT
+	}
+	return C.SMQ_OK	
 }
 
-func (q *shmQueue) PopNoneblock(data []byte) error {
-	remain := q.wIdx - q.rIdx
-	if remain == 0 {
-		return ErrBlockR
+//export sqSemGive
+func sqSemGive(p *C.SHM_QUEUE, block int) C.int {
+	q := (*shmQueue)unsafe.Pointer(p.pQ)
+	sem := q.sem
+	if block==1 {
+		sem.Give(true)
+	} else {
+		sem.Give(false)
 	}
-
-	var err error
-	offset := q.rIdx % q.max
-
-	var uLen uint32
-	p := unsafe.Pointer(&uLen)
-	p1 := (*[4]byte)(p)
-
-	//read data size
-	copy((*p1)[0:], q.buffer[offset:])
-
-	capLen := uint64(cap(data))
-	if capLen > q.each {
-		capLen = q.each
-	} else if capLen < uint64(uLen) {
-		err = ErrTruncate
-	}
-	copy(data, q.buffer[offset+4:offset+4+capLen])
-	return err
+	return SMQ_OK
 }
+

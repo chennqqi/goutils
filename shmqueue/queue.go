@@ -75,7 +75,7 @@ func (q *shmQueue) Push(data []byte) error {
 	//fmt.Println("WRITE BUFFER OFFSET:", offset, q.buffer[valueOffset+4])
 
 	//fmt.Println("w REMAIN:", remain)
-	atomic.AddUint64(&q.wIdx, 1)
+//	if atomic.AddUint64(&q.wIdx, 1) == 1 {
 	if remain == 1 {
 		//fmt.Println("semGive")
 		sem.Give(false)
