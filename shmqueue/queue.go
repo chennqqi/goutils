@@ -35,7 +35,7 @@ type shmQueue struct {
 func New(segmentSize int, total int) (ShmQueue, error) {
 	var q shmQueue
 	q.max = uint64(total)
-	q.buffer = make([]byte, segmentSize*total)
+	q.buffer = make([]byte, (segmentSize+4)*total)
 	q.sem = NewBinarySem()
 	q.each = uint64(segmentSize)
 	return &q, nil
@@ -75,11 +75,12 @@ func (q *shmQueue) Push(data []byte) error {
 	//fmt.Println("WRITE BUFFER OFFSET:", offset, q.buffer[valueOffset+4])
 
 	//fmt.Println("w REMAIN:", remain)
-//	if atomic.AddUint64(&q.wIdx, 1) == 1 {
-	if remain == 1 {
+	//	if atomic.AddUint64(&q.wIdx, 1) == 1 {
+	if remain == 0 {
 		//fmt.Println("semGive")
 		sem.Give(false)
 	}
+	atomic.AddUint64(&q.wIdx, 1)
 	return nil
 }
 

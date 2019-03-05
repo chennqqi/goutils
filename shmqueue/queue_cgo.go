@@ -34,7 +34,7 @@ int sqBPush(SHM_QUEUE* pQ, const void* p, unsigned long size) {
 	}	
 	memcpy(pQ->pBuff+valueOffset, (void*)&size, 4);
 	memcpy(pQ->pBuff+valueOffset+4, p, size);
-	if (__sync_fetch_and_add(pQ->pRIdx, 1) == 1) {
+	if (__sync_fetch_and_add(pQ->pWIdx, 1) == 1) {
 		sqSemGive(pQ);
 	}
 	return size;

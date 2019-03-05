@@ -26,7 +26,7 @@ type shmQueue2 struct {
 func NewShmQueue2(segmentSize int, total int) (ShmQueue2, error) {
 	var q shmQueue2
 	q.max = uint64(total)
-	q.buffer = make([]byte, segmentSize*total)
+	q.buffer = make([]byte, (segmentSize+4)*total)
 	q.sem = NewCounterSem(total, 0)
 
 	q.each = uint64(segmentSize)
