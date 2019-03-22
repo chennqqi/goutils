@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"strings"
 
 	"sync"
 
@@ -51,7 +52,8 @@ func (c *ConsulOperator) Fix() {
 		u, err := url.Parse(c.Agent)
 		if err == nil {
 			c.Path = u.Path
-			fmt.Sscanf(u.Host, "%s:%d", &c.IP, c.Port)
+			c.IP = strings.Split(u.Host, ":")[0]
+			fmt.Sscanf(u.Port(), "%d", &c.Port)
 		} else {
 			log.Printf("parse consul agent url(%v) failed(%v), try default localhost:8500", c.Agent, err)
 		}
