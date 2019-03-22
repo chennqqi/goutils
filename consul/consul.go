@@ -3,6 +3,8 @@ package consul
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/url"
 
 	"sync"
 
@@ -45,6 +47,14 @@ func NewConsulOp(agent string) *ConsulOperator {
 func (c *ConsulOperator) Fix() {
 	if c.Agent == "" {
 		c.Agent = "localhost:8500"
+	} else {
+		u, err := url.Parse(c.Agent)
+		if err == nil {
+			c.Path = u.Path
+			fmt.Sscanf(u.Host, "%s:%d", &c.IP, c.Port)
+		} else {
+			log.Printf("parse consul agent url(%v) failed(%v), try default localhost:8500", c.Agent, err)
+		}
 	}
 	if c.Path == "" {
 		c.Path = CONSUL_HEALTH_PATH

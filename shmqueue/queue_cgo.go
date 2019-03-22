@@ -14,7 +14,7 @@ type shmQueue struct{
 	unsigned long long* pWIdx;
 	unsgined long long each;
 	unsgined long long total;
-	void* pQ;
+	unsigned long pQ;
 }SHM_QUEUE;
 
 extern int sqSemTake(SHM_QUEUE* pQ);
