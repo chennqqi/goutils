@@ -57,6 +57,9 @@ func (c *ConsulOperator) Fix() {
 		} else {
 			log.Printf("parse consul agent url(%v) failed(%v), try default localhost:8500", c.Agent, err)
 		}
+		if u.Scheme == "consul" {
+			c.Agent = u.Host
+		}
 	}
 	if c.Path == "" {
 		c.Path = CONSUL_HEALTH_PATH
