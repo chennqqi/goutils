@@ -19,6 +19,21 @@ type ConsulApp struct {
 	*ConsulOperator
 }
 
+func ReadTxt(c *ConsulOperator, file string) ([]byte, error) {
+	if strings.HasPrefix(file, "consul://") {
+		u, err := url.Parse(file)
+		if gconsul == nil {
+			return nil, errors.New("consul not set")
+		} else if err != nil {
+			return nil, err
+		} else {
+			return c.Get(u.Path)
+		}
+	} else {
+		return ioutil.ReadFile(file)
+	}
+}
+
 func NewAppWithCustomCfg(cfg interface{}, confName, healthHost string) (*ConsulApp, error) {
 	var capp ConsulApp
 	appName := utils.ApplicationName()
@@ -85,10 +100,16 @@ func NewAppWithCustomCfg(cfg interface{}, confName, healthHost string) (*ConsulA
 	return &capp, nil
 }
 
-func NewAppWithCustomCfgEx(cfg interface{}, confName, healthHost, agent string) (*ConsulApp, error) {
+func NewAppEx(cfg interface{}, healthHost, consulUrl string) (*ConsulApp, error) {
 	var capp ConsulApp
+
+	host, port, confPath, err := ParseConsulUrl(consulUrl)
+	if err != nil {
+		return nil, err
+	}
 	appName := utils.ApplicationName()
-	consulapi := NewConsulOp(agent)
+
+	consulapi := NewConsulOp(host + ":" + port)
 	consulapi.Fix()
 	capp.ConsulOperator = consulapi
 
@@ -107,11 +128,31 @@ func NewAppWithCustomCfgEx(cfg interface{}, confName, healthHost, agent string) 
 			logrus.Errorf("[consul/app.go] Load %v config from local error: %v", confName, err)
 			return nil, err
 		}
-	} else {
-		if confName == "" {
-			confName = fmt.Sprintf("config/%s.yml", appName)
-		} else if !strings.HasPrefix(confName, `config/`) {
-			confName = fmt.Sprintf("config/%s", confName)
+	} else { // consul is OK
+
+		//try /${APPNAME}.yml
+		//try /config/${APPNAME}.yml
+		//try /config/${APPNAME}.yml
+		var names []string
+		confName = fmt.Sprintf("%s.yml", appName)
+		names = append(names, confName)
+		confName = appName
+		names = append(names, confName)
+		confName = fmt.Sprintf("config/%s.yml", appName)
+		names = append(names, confName)
+		confName = fmt.Sprintf("config/%s", confName)
+		names = append(names, confName)
+
+		//try /config/${APPNAME}.yml
+		for i := 0; i < len(names); i++ {
+			name := names[i]
+			txt, err := consulapi.Get(confName)
+			if err == nil {
+			} else if err == ErrNotExist {
+
+			} else {
+				//RETURN ERROR
+			}
 		}
 
 		txt, err := consulapi.Get(confName)

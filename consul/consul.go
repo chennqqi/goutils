@@ -7,6 +7,8 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/pkg/errors"
+
 	"sync"
 
 	"github.com/Sirupsen/logrus"
@@ -38,6 +40,22 @@ type ConsulOperator struct {
 	lockmap map[string]*consulapi.Lock
 }
 
+func ParseConsulUrl(consulUrl string) (host string, port string, path string, e error) {
+	u, err := url.Parse(c.Agent)
+	if err == nil {
+		if u.Scheme != "consul" {
+			e = errors.Errorf(`expect scheme consul, not %v`, u.Scheme)
+			return
+		}
+		path = u.Path
+		host = strings.Split(u.Host, ":")[0]
+		port = u.Port()
+		return
+	}
+	e = err
+	return
+}
+
 func NewConsulOp(agent string) *ConsulOperator {
 	var c ConsulOperator
 	c.lockmap = make(map[string]*consulapi.Lock)
@@ -49,16 +67,14 @@ func (c *ConsulOperator) Fix() {
 	if c.Agent == "" {
 		c.Agent = "localhost:8500"
 	} else {
-		u, err := url.Parse(c.Agent)
+		host, port, path, err := ParseConsulUrl(c.Agent)
 		if err == nil {
-			c.Path = u.Path
-			c.IP = strings.Split(u.Host, ":")[0]
-			fmt.Sscanf(u.Port(), "%d", &c.Port)
+			c.Path = path
+			c.IP = host
+			c.Agent = host
+			fmt.Sscanf(port, "%d", &c.Port)
 		} else {
 			log.Printf("parse consul agent url(%v) failed(%v), try default localhost:8500", c.Agent, err)
-		}
-		if u.Scheme == "consul" {
-			c.Agent = u.Host
 		}
 	}
 	if c.Path == "" {
