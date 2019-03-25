@@ -22,6 +22,8 @@ type ConsulApp struct {
 	*ConsulOperator
 }
 
+// load an conf file text form file(FQDN)
+// try consul first, if not exist, try local file
 func ReadTxt(c *ConsulOperator, file string) ([]byte, error) {
 	if strings.HasPrefix(file, "consul://") {
 		u, err := url.Parse(file)
@@ -37,6 +39,10 @@ func ReadTxt(c *ConsulOperator, file string) ([]byte, error) {
 	}
 }
 
+// create a consul app with load cfg, using 127.0.0.1:8500
+// cfg is required parameter, the cfg address
+// arg heathHost is must parameter, a health http address of app
+// arg consulUrl is an FQDN format string which contains consul host,port,configpath
 func NewAppWithCustomCfg(cfg interface{}, confName, healthHost string) (*ConsulApp, error) {
 	var capp ConsulApp
 	appName := utils.ApplicationName()
@@ -103,7 +109,12 @@ func NewAppWithCustomCfg(cfg interface{}, confName, healthHost string) (*ConsulA
 	return &capp, nil
 }
 
-func NewAppWithCustomCfgEx(cfg interface{}, healthHost, consulUrl string) (*ConsulApp, error) {
+// create a consul app with load cfg, using 127.0.0.1:8500
+// cfg is required parameter, the cfg address
+// arg heathHost is must parameter, a health http address of app
+// arg consulUrl is an FQDN format string which contains consul host,port,configpath, if configpath is empty,
+// ${appname}.yml, config/${appname} will be tried to load in order
+func NewAppWithCfgEx(cfg interface{}, healthHost, consulUrl string) (*ConsulApp, error) {
 	var capp ConsulApp
 
 	host, port, confPath, err := ParseConsulUrl(consulUrl)
@@ -203,41 +214,23 @@ func NewAppWithCustomCfgEx(cfg interface{}, healthHost, consulUrl string) (*Cons
 	return &capp, nil
 }
 
+// create a consul app with load cfg, using 127.0.0.1:8500
+// cfg is required parameter, the cfg address
+// arg heathHost is must parameter, a health http address of app
 func NewAppWithCfg(cfg interface{}, healthHost string) (*ConsulApp, error) {
 	return NewAppWithCustomCfg(cfg, "", healthHost)
 }
 
-func NewApp(healthHost string) (*ConsulApp, error) {
+// create a consul app
+// arg heathHost is must parameter, a health http address of app
+// arg agent is option, if empty using default 127.0.0.1:8500
+func NewApp(healthHost, agent string) (*ConsulApp, error) {
 	//post fix consul
 	if healthHost == "" {
 		return nil, errors.New("healHost must be valid")
 	}
-
-	var capp ConsulApp
-	appName := utils.ApplicationName()
-	consulapi := NewConsulOp("")
-	consulapi.Fix()
-	capp.ConsulOperator = consulapi
-
-	if err := consulapi.Ping(); err != nil {
-		logrus.Error("[main] ping consul failed, try local")
-		return nil, err
-	}
-
-	{
-		consulapi.Name = appName
-		v := strings.Split(healthHost, ":")
-		if len(v) > 1 {
-			fmt.Sscanf(v[1], "%d", &consulapi.Port)
-		}
-	}
-	return &capp, nil
-}
-
-func NewAppEx(healthHost, agent string) (*ConsulApp, error) {
-	//post fix consul
-	if healthHost == "" {
-		return nil, errors.New("healHost must be valid")
+	if agent == "" {
+		agent == "127.0.0.1:8500"
 	}
 
 	var capp ConsulApp
@@ -261,6 +254,7 @@ func NewAppEx(healthHost, agent string) (*ConsulApp, error) {
 	return &capp, nil
 }
 
+// wait for main function return and register app to service to consul
 func (c *ConsulApp) Wait(stopcall func(os.Signal), signals ...os.Signal) {
 	quitChan := make(chan os.Signal, 1)
 	defer close(quitChan)
