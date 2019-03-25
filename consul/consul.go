@@ -6,9 +6,6 @@ import (
 	"log"
 	"net/url"
 	"strings"
-
-	"github.com/pkg/errors"
-
 	"sync"
 
 	"github.com/Sirupsen/logrus"
@@ -41,7 +38,7 @@ type ConsulOperator struct {
 }
 
 func ParseConsulUrl(consulUrl string) (host string, port string, path string, e error) {
-	u, err := url.Parse(c.Agent)
+	u, err := url.Parse(consulUrl)
 	if err == nil {
 		if u.Scheme != "consul" {
 			e = errors.Errorf(`expect scheme consul, not %v`, u.Scheme)
