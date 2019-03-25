@@ -117,13 +117,13 @@ func NewAppWithCustomCfg(cfg interface{}, confName, healthHost string) (*ConsulA
 func NewAppWithCfgEx(cfg interface{}, healthHost, consulUrl string) (*ConsulApp, error) {
 	var capp ConsulApp
 
-	host, port, confPath, err := ParseConsulUrl(consulUrl)
+	appinfo, err := ParseConsulUrl(consulUrl)
 	if err != nil {
 		return nil, err
 	}
 	appName := utils.ApplicationName()
 
-	consulapi := NewConsulOp(host + ":" + port)
+	consulapi := NewConsulOp(consulUrl)
 	consulapi.Fix()
 	capp.ConsulOperator = consulapi
 
@@ -132,7 +132,7 @@ func NewAppWithCfgEx(cfg interface{}, healthHost, consulUrl string) (*ConsulApp,
 	//try /config/${APPNAME}.yml
 	var names []string
 	var defaultName string
-	var confName = confPath
+	var confName = appinfo.Config
 	if confName == "" {
 		confName = fmt.Sprintf("%s.yml", appName)
 		defaultName = confName
@@ -145,7 +145,7 @@ func NewAppWithCfgEx(cfg interface{}, healthHost, consulUrl string) (*ConsulApp,
 		names = append(names, confName)
 	} else {
 		names = append(names, confName)
-		defaultName = confPath
+		defaultName = appinfo.Config
 	}
 
 	if err := consulapi.Ping(); err != nil {
@@ -193,8 +193,7 @@ func NewAppWithCfgEx(cfg interface{}, healthHost, consulUrl string) (*ConsulApp,
 				return nil, errors.New("cfg not contains`HealthHost or Health")
 			} else {
 				//should call url.Parse use ParseConsulUrl instand
-				host, port, _, _ := ParseConsulUrl(field.String())
-				healthHost = fmt.Sprintf("%v:%v", host, port)
+				healthHost = field.String()
 			}
 		} else {
 			healthHost = field.String()
@@ -230,7 +229,7 @@ func NewApp(healthHost, agent string) (*ConsulApp, error) {
 		return nil, errors.New("healHost must be valid")
 	}
 	if agent == "" {
-		agent == "127.0.0.1:8500"
+		agent = "127.0.0.1:8500"
 	}
 
 	var capp ConsulApp

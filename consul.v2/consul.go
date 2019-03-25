@@ -3,34 +3,24 @@ package consul
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/url"
 	"strings"
 	"sync"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/chennqqi/goutils/utils"
 	qgoutils "github.com/chennqqi/goutils/utils"
-	"github.com/chennqqi/goutils/yamlconfig"
 	consulapi "github.com/hashicorp/consul/api"
 	"github.com/pkg/errors"
 )
 
 var (
 	ErrNotExist = errors.New("NOT EXIST")
-)
-
-const (
-	CONSUL_HEALTH_PATH = "health"
+	HealthPath  = "health"
 )
 
 type ConsulOperator struct {
-	Agent string `json:"agent,omitempty" yaml:"agent,omitempty"`
-
-	IP       string `json:"ip" yaml:"ip"`
-	Port     int    `json:"port" yaml:"port"`
-	Name     string `json:"Name" yaml:"Name"`
-	Path     string `json:"path,omitempty" yaml:"path,omitempty"`
-	Interval string `json:"interval,omitempty" yaml:"interval,omitempty"`
+	*ConsulAppInfo
 
 	//for check
 	consul  *consulapi.Client `json:"-" yaml:"-"`
@@ -39,64 +29,89 @@ type ConsulOperator struct {
 }
 
 type ConsulAppInfo struct {
-	Host   string `json:"host" yaml:"omitempty"`
-	Port   int    `json:"port" yaml:"omitempty"`
-	Config string `json:"config" yaml:"omitempty"`
-	Health string `json:"health" yaml:"omitempty"`
+	ConsulHost string `json:"consul_host" yaml:"consul_host"`
+	ConsulPort int    `json:"consul_port" yaml:"consul_port"`
+
+	Config string     `json:"config" yaml:"config"`
+	Values url.Values `json:"values" yaml:"values"`
+
+	ServicePort int    `json:"service_port" yaml:"service_port"`
+	ServiceIP   string `json:"service_ip" yaml:"service_ip"`
+	ServiceName string `json:"service_name" yaml:"service_name"`
+
+	CheckInterval string `json:"check_interval" yaml:"check_interval"`
+	CheckHTTP     string `json:"check_http" yaml:"check_http"`
+	CheckTCP      string `json:"check_tcp" yaml:"check_tcp"`
 }
 
-func ParseConsulUrl(consulUrl string) (host string, port string, path string, e error) {
+func ParseConsulUrl(consulUrl string) (*ConsulAppInfo, error) {
+	var appinfo ConsulAppInfo
+	appinfo.Values = make(url.Values)
+
 	u, err := url.Parse(consulUrl)
 	if err == nil {
 		if u.Scheme != "consul" {
-			e = errors.Errorf(`expect scheme consul, not %v`, u.Scheme)
-			return
+			return nil, errors.Errorf(`expect scheme consul, not %v`, u.Scheme)
 		}
-		path = u.Path
-		host = strings.Split(u.Host, ":")[0]
-		port = u.Port()
-		return
+		appinfo.Config = u.Path
+		appinfo.ConsulHost = strings.Split(u.Host, ":")[0]
+		fmt.Sscanf(u.Port(), "%d", &appinfo.ConsulPort)
+		appinfo.Values = u.Query()
+		querys := appinfo.Values
+
+		appinfo.CheckInterval = querys.Get("check_interval")
+		appinfo.CheckHTTP = querys.Get("check_http")
+		appinfo.CheckTCP = querys.Get("check_tcp")
+
+		appinfo.ServiceIP = querys.Get("service_ip")
+		sPort := querys.Get("service_port")
+		fmt.Sscanf(sPort, "%d", &appinfo.ServicePort)
+
+		appinfo.ServiceName = querys.Get("service_name")
+		return &appinfo, nil
 	}
-	e = err
-	return
+
+	return nil, err
 }
 
-func NewConsulOp(agent string) *ConsulOperator {
+func NewConsulOp(consulUrl string) (*ConsulOperator, error) {
 	var c ConsulOperator
 	c.lockmap = make(map[string]*consulapi.Lock)
-	c.Agent = agent
-	return &c
+
+	appinfo, err := ParseConsulUrl(consulUrl)
+	if err != nil {
+		return nil, err
+	}
+	c.ConsulAppInfo = appinfo
+	return &c, nil
 }
 
 func (c *ConsulOperator) Fix() {
-	if c.Agent == "" {
-		c.Agent = "localhost:8500"
-	} else {
-		//fill agent
-		host, port, path, err := ParseConsulUrl(c.Agent)
-		if err == nil {
-			c.Path = path
-			c.IP = host
-			c.Agent = host
-			fmt.Sscanf(port, "%d", &c.Port)
-		} else {
-			log.Printf("parse consul agent url(%v) failed(%v), try default localhost:8500", c.Agent, err)
+	if c.ConsulHost == "" {
+		c.ConsulHost = "127.0.0.1"
+	}
+	if c.ConsulPort == 0 {
+		c.ConsulPort = 8500
+	}
+	if c.ServicePort == 0 {
+		c.ServicePort = 80
+	}
+	if c.ServiceIP == "" {
+		c.ServiceIP, _ = qgoutils.GetHostIP()
+		if c.ServiceIP == "" {
+			c.ServiceIP, _ = qgoutils.GetInternalIP()
 		}
 	}
-	if c.Path == "" {
-		c.Path = CONSUL_HEALTH_PATH
+	if c.ServiceName == "" {
+		c.ServiceName = utils.ApplicationName()
 	}
-	if c.Port == 0 {
-		c.Port = 80
-	}
-	if c.IP == "" {
-		c.IP, _ = qgoutils.GetHostIP()
-		if c.IP == "" {
-			c.IP, _ = qgoutils.GetInternalIP()
+
+	if c.CheckHTTP == "" && c.CheckTCP == "" {
+		c.CheckHTTP = fmt.Sprintf("http://%v:%d/%v",
+			c.ServiceIP, c.ServicePort, HealthPath)
+		if c.CheckInterval == "" { // mix 10s
+			c.CheckInterval = "10s"
 		}
-	}
-	if c.Interval == "" {
-		c.Interval = "10s"
 	}
 }
 
@@ -104,7 +119,7 @@ func (c *ConsulOperator) Ping() error {
 	var retErr error
 	c.once.Do(func() {
 		consulCfg := consulapi.DefaultConfig()
-		consulCfg.Address = c.Agent
+		consulCfg.Address = fmt.Sprintf("%v:%d", c.ConsulHost, c.ConsulPort)
 		consul, err := consulapi.NewClient(consulCfg)
 		retErr = err
 		if err != nil {
@@ -198,17 +213,18 @@ func (c *ConsulOperator) RegisterService() error {
 	consul := c.consul
 	agent := consul.Agent()
 	check := consulapi.AgentServiceCheck{
-		Interval:                       c.Interval,
-		HTTP:                           fmt.Sprintf("http://%s:%d/%s", c.IP, c.Port, c.Path),
+		Interval:                       c.CheckInterval,
+		HTTP:                           c.CheckHTTP,
+		TCP:                            c.CheckTCP,
 		DeregisterCriticalServiceAfter: "1m",
 	}
 
 	service := &consulapi.AgentServiceRegistration{
-		ID:      c.Name,
-		Name:    c.Name,
+		ID:      c.ServiceName,
+		Name:    c.ServiceName,
 		Check:   &check,
-		Address: c.IP,
-		Port:    c.Port,
+		Address: c.ServiceIP,
+		Port:    c.ServicePort,
 	}
 	txt, _ := json.MarshalIndent(*service, " ", "\t")
 	fmt.Println("register service:", string(txt))
@@ -218,7 +234,7 @@ func (c *ConsulOperator) RegisterService() error {
 func (c *ConsulOperator) DeregisterService() error {
 	consul := c.consul
 	agent := consul.Agent()
-	return agent.ServiceDeregister(c.Name)
+	return agent.ServiceDeregister(c.ServiceName)
 }
 
 func (c *ConsulOperator) PrintServices(name string) error {
@@ -248,8 +264,4 @@ func (c *ConsulOperator) ListServices() (map[string][]string, error) {
 	catalog := consul.Catalog()
 	services, _, err := catalog.Services(nil)
 	return services, err
-}
-
-func (c *ConsulOperator) Save() {
-	yamlconfig.Save(*c, "consul.yml")
 }

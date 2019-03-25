@@ -37,20 +37,40 @@ type ConsulOperator struct {
 	lockmap map[string]*consulapi.Lock
 }
 
-func ParseConsulUrl(consulUrl string) (host string, port string, path string, e error) {
+type ConsulAppInfo struct {
+	ConsulHost string `json:"consul_host" yaml:"consul_host"`
+	ConsulPort int    `json:"consul_port" yaml:"consul_port"`
+
+	Config string     `json:"config" yaml:"config"`
+	Values url.Values `json:"values" yaml:"values"`
+
+	CheckInterval string `json:"check_interval" yaml:"check_interval"`
+	CheckHTTP     string `json:"check_http" yaml:"check_http"`
+	CheckTCP      string `json:"check_tcp" yaml:"check_tcp"`
+}
+
+func ParseConsulUrl(consulUrl string) (*ConsulAppInfo, error) {
+	var appinfo ConsulAppInfo
+	appinfo.Values = make(url.Values)
+
 	u, err := url.Parse(consulUrl)
 	if err == nil {
 		if u.Scheme != "consul" {
-			e = errors.Errorf(`expect scheme consul, not %v`, u.Scheme)
-			return
+			return nil, errors.Errorf(`expect scheme consul, not %v`, u.Scheme)
 		}
-		path = u.Path
-		host = strings.Split(u.Host, ":")[0]
-		port = u.Port()
-		return
+		appinfo.Config = u.Path
+		appinfo.ConsulHost = strings.Split(u.Host, ":")[0]
+		fmt.Sscanf(u.Port(), "%d", &appinfo.ConsulPort)
+		appinfo.Values = u.Query()
+		querys := appinfo.Values
+
+		appinfo.CheckInterval = querys.Get("check_interval")
+		appinfo.CheckHTTP = querys.Get("check_http")
+		appinfo.CheckTCP = querys.Get("check_tcp")
+		return &appinfo, nil
 	}
-	e = err
-	return
+
+	return nil, err
 }
 
 func NewConsulOp(agent string) *ConsulOperator {
@@ -64,12 +84,10 @@ func (c *ConsulOperator) Fix() {
 	if c.Agent == "" {
 		c.Agent = "localhost:8500"
 	} else {
-		host, port, path, err := ParseConsulUrl(c.Agent)
+		appinfo, err := ParseConsulUrl(c.Agent)
 		if err == nil {
-			c.Path = path
-			c.IP = host
-			c.Agent = host
-			fmt.Sscanf(port, "%d", &c.Port)
+			c.IP = appinfo.ConsulHost
+			c.Agent = fmt.Sprintf("%v:%d", appinfo.ConsulHost, appinfo.ConsulPort)
 		} else {
 			log.Printf("parse consul agent url(%v) failed(%v), try default localhost:8500", c.Agent, err)
 		}
@@ -86,7 +104,7 @@ func (c *ConsulOperator) Fix() {
 			c.IP, _ = qgoutils.GetInternalIP()
 		}
 	}
-	if c.Interval == "" {
+	if c.Interval == "" { // mix 10s
 		c.Interval = "10s"
 	}
 }
@@ -239,8 +257,4 @@ func (c *ConsulOperator) ListServices() (map[string][]string, error) {
 	catalog := consul.Catalog()
 	services, _, err := catalog.Services(nil)
 	return services, err
-}
-
-func (c *ConsulOperator) Save() {
-	yamlconfig.Save(*c, "consul.yml")
 }
