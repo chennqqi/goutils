@@ -10,7 +10,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	qgoutils "github.com/chennqqi/goutils/utils"
-	"github.com/chennqqi/goutils/yamlconfig"
 	consulapi "github.com/hashicorp/consul/api"
 	"github.com/pkg/errors"
 )
