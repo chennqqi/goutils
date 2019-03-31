@@ -16,6 +16,10 @@ func (c Duration) String() string {
 	return time.Duration(c).String()
 }
 
+func (c Duration) Duration() stdtime.Duration {
+	return stdtime.Duration(c)
+}
+
 func (c Duration) MarshalYAML() (interface{}, error) {
 	return time.Duration(c).String(), nil
 }
