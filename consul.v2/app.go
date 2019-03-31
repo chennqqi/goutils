@@ -3,9 +3,11 @@ package consul
 import (
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/url"
 	"os"
 	"os/signal"
+	"reflect"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -112,6 +114,34 @@ func NewConsulAppWithCfg(cfg interface{}, consulUrl string) (*ConsulApp, error) 
 			logrus.Errorf("[consul/app.go] all try load failed, make default %v", defaultName)
 			yamlconfig.Save(cfg, defaultName)
 			return nil, ErrNotExist
+		}
+	}
+
+	//post fix consul
+	var healthHost string
+	if cfg != nil {
+		st := reflect.ValueOf(cfg).Elem()
+		names := []string{"HealthHost", "Health"}
+		for i := 0; i < len(names); i++ {
+			field := st.FieldByName(names[i])
+			if field.IsValid() {
+				healthHost = field.String()
+				break
+			}
+		}
+	}
+
+	{
+		//		consulapi.Name = appName
+		v := strings.Split(healthHost, ":")
+		if len(v) > 1 {
+			fmt.Sscanf(v[1], "%d", &consulapi.ServicePort)
+		}
+		if v[0] != "" && v[0] != "127.0.0.1" && v[0] != "##1" {
+			ip := net.ParseIP(v[0])
+			if ip != nil {
+				consulapi.ServiceIP = ip.String()
+			}
 		}
 	}
 
