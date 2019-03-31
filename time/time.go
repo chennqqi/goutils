@@ -35,10 +35,6 @@ func (c Duration) String() string {
 	return stdtime.Duration(c).String()
 }
 
-func (c Duration) Duration() stdtime.Duration {
-	return stdtime.Duration(c)
-}
-
 func (c *Duration) UnmarshalJSON(raw []byte) error {
 	if len(raw) < 3 {
 		return errors.New("No data")
