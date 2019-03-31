@@ -118,33 +118,45 @@ func NewConsulAppWithCfg(cfg interface{}, consulUrl string) (*ConsulApp, error) 
 	}
 
 	//post fix consul
-	var healthHost string
 	if cfg != nil {
-		st := reflect.ValueOf(cfg).Elem()
-		names := []string{"HealthHost", "Health"}
-		for i := 0; i < len(names); i++ {
-			field := st.FieldByName(names[i])
+		//health
+		var healthHost string
+		var health string
+
+		{
+			st := reflect.ValueOf(cfg).Elem()
+			field := st.FieldByName("Health")
+			if field.IsValid() {
+				health = field.String()
+				//health is an url
+				if strings.HasPrefix(health, "tcp") {
+					consulapi.CheckTCP = health
+					consulapi.CheckHTTP = ""
+				} else if strings.HasPrefix(health, "http") {
+					consulapi.CheckHTTP = health
+					consulapi.CheckTCP = ""
+				}
+			}
+		}
+		if health == "" {
+			st := reflect.ValueOf(cfg).Elem()
+			field := st.FieldByName("HealthHost")
 			if field.IsValid() {
 				healthHost = field.String()
-				break
+				v := strings.Split(healthHost, ":")
+				if len(v) > 1 {
+					fmt.Sscanf(v[1], "%d", &consulapi.ServicePort)
+				}
+				fmt.Println("healthHost:", v, consulapi.ServicePort)
+				if v[0] != "" && v[0] != "127.0.0.1" && v[0] != "##1" {
+					ip := net.ParseIP(v[0])
+					if ip != nil {
+						consulapi.ServiceIP = ip.String()
+					}
+				}
 			}
 		}
 	}
-
-	{
-		//		consulapi.Name = appName
-		v := strings.Split(healthHost, ":")
-		if len(v) > 1 {
-			fmt.Sscanf(v[1], "%d", &consulapi.ServicePort)
-		}
-		if v[0] != "" && v[0] != "127.0.0.1" && v[0] != "##1" {
-			ip := net.ParseIP(v[0])
-			if ip != nil {
-				consulapi.ServiceIP = ip.String()
-			}
-		}
-	}
-
 	return &capp, nil
 }
 
