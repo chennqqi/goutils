@@ -100,12 +100,14 @@ func NewConsulAppWithCfg(cfg interface{}, consulUrl string) (*ConsulApp, error) 
 		//try /config/${APPNAME}.yml
 		var exist bool
 		for i := 0; i < len(names); i++ {
-			logrus.Infof("[consul/app.go] get consul kv: %v", names[i])
 			txt, err := consulapi.Get(names[i])
 			if err == nil {
+				logrus.Infof("[consul/app.go] successfully get consul kv: %v", names[i])
 				yaml.Unmarshal(txt, cfg)
 				exist = true
 				break
+			} else {
+			  logrus.Infof("[consul/app.go] failed get consul kv(%v), error(%v)", names[i], err)
 			}
 		}
 		if !exist {
