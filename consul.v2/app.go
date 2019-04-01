@@ -3,9 +3,11 @@ package consul
 import (
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/url"
 	"os"
 	"os/signal"
+	"reflect"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -117,6 +119,46 @@ func NewConsulAppWithCfg(cfg interface{}, consulUrl string) (*ConsulApp, error) 
 		}
 	}
 
+	//post fix consul
+	if cfg != nil {
+		//health
+		var healthHost string
+		var health string
+
+		{
+			st := reflect.ValueOf(cfg).Elem()
+			field := st.FieldByName("Health")
+			if field.IsValid() {
+				health = field.String()
+				//health is an url
+				if strings.HasPrefix(health, "tcp") {
+					consulapi.CheckTCP = health
+					consulapi.CheckHTTP = ""
+				} else if strings.HasPrefix(health, "http") {
+					consulapi.CheckHTTP = health
+					consulapi.CheckTCP = ""
+				}
+			}
+		}
+		if health == "" {
+			st := reflect.ValueOf(cfg).Elem()
+			field := st.FieldByName("HealthHost")
+			if field.IsValid() {
+				healthHost = field.String()
+				v := strings.Split(healthHost, ":")
+				if len(v) > 1 {
+					fmt.Sscanf(v[1], "%d", &consulapi.ServicePort)
+				}
+				fmt.Println("healthHost:", v, consulapi.ServicePort)
+				if v[0] != "" && v[0] != "127.0.0.1" && v[0] != "##1" {
+					ip := net.ParseIP(v[0])
+					if ip != nil {
+						consulapi.ServiceIP = ip.String()
+					}
+				}
+			}
+		}
+	}
 	return &capp, nil
 }
 
