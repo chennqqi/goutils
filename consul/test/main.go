@@ -17,7 +17,7 @@ func consulApp() {
 		})
 		http.ListenAndServe(healthHost, nil)
 	}()
-	app, err := consul.NewApp(healthHost)
+	app, err := consul.NewApp(healthHost, "")
 	if err != nil {
 		fmt.Println("NEWAPP ERROR:", err)
 		return
