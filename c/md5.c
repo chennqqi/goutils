@@ -374,3 +374,30 @@ int MD5FileUpdateFile(MD5_CTX* context, const char* filename)
 	}
 	return 0;
 }
+
+long long MD5FileExt(const char* filename, unsigned char digest[16])
+{
+        FILE *file;
+        MD5_CTX context;
+        int len;
+        long long size;
+        unsigned char buffer[1024];
+
+        file = fopen(filename, "rb");
+        if (file == NULL)
+        {
+                return -1;
+        }
+        else
+        {
+                MD5Init(&context);
+                while ((len = fread(buffer, 1, 1024, file)))
+                {
+                        size += (size_t)len;
+                        MD5Update(&context, buffer, len);
+                }
+                MD5Final(digest, &context);
+                fclose(file);
+        }
+        return size;
+}

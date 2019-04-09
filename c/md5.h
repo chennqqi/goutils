@@ -28,6 +28,7 @@ extern "C" {
 	void MD5Final(unsigned char digest[16], MD5_CTX* context);
 	void MDString(char *string, unsigned char digest[16]);
 	int MD5File(const char *filename, unsigned char digest[16]);
+	long long MD5FileExt(const char* filename, unsigned char digest[16]);
 
 #ifdef __cplusplus
 }
