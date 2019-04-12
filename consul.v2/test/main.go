@@ -6,7 +6,7 @@ import (
 
 	"net/http"
 
-	"github.com/chennqqi/goutils/consul"
+	"github.com/chennqqi/goutils/consul.v2"
 )
 
 func consulApp() {
@@ -17,7 +17,7 @@ func consulApp() {
 		})
 		http.ListenAndServe(healthHost, nil)
 	}()
-	app, err := consul.NewApp(healthHost)
+	app, err := consul.NewConsulApp(healthHost)
 	if err != nil {
 		fmt.Println("NEWAPP ERROR:", err)
 		return
@@ -43,7 +43,7 @@ func consulAppWithConfig() {
 		http.ListenAndServe(healthHost, nil)
 	}()
 	var cfg CFG2
-	app, err := consul.NewAppWithCfg(&cfg, healthHost)
+	app, err := consul.NewConsulAppWithCfg(&cfg, healthHost)
 	if err != nil {
 		fmt.Println("NEWAPP ERROR:", err)
 		return
