@@ -26,8 +26,9 @@ func DownloadFile(url string, filename string) error {
 		return err
 	}
 	//TODO: uncompress
-
-	io.Copy(bufio.NewWriter(file), resp.Body)
+	buf := bufio.NewWriter(file)
+	_, err = io.Copy(buf, resp.Body)
 	resp.Body.Close()
-	return nil
+	buf.Flush()
+	return err
 }
