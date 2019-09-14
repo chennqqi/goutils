@@ -57,7 +57,7 @@ func (es *ElasticClientV7) Open(host string, port int, usrName, pass string) err
 func (es *ElasticClientV7) Write(index string, id string,
 	typ string, v interface{}) error {
 	es.bkt.Add(elastic.NewBulkIndexRequest().Index(
-		index).Type(typ).Id(id).Doc(v))
+		index).Id(id).Doc(v))
 	return nil
 }
 
@@ -90,7 +90,7 @@ func (es *ElasticClientV7) Close() {
 //write a document directly
 func (es *ElasticClientV7) WriteDirect(index, id, typ string,
 	v interface{}) error {
-	_, err := es.client.Index().Pipeline(es.pipeline).Index(index).Type(typ).Id(id).BodyJson(v).Do(context.Background())
+	_, err := es.client.Index().Pipeline(es.pipeline).Index(index).Id(id).BodyJson(v).Do(context.Background())
 	return err
 }
 
