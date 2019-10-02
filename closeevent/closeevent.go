@@ -4,8 +4,6 @@ package closeevent
 import (
 	"os"
 	"os/signal"
-
-	"github.com/Sirupsen/logrus"
 )
 
 func Wait(stopcall func(os.Signal), signals ...os.Signal) {
@@ -18,7 +16,6 @@ func Wait(stopcall func(os.Signal), signals ...os.Signal) {
 	}
 
 	sig := <-quitChan
-	logrus.Info("[main:main] quit, recv signal ", sig)
 	if stopcall != nil {
 		stopcall(sig)
 	}
