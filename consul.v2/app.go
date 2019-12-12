@@ -46,6 +46,10 @@ func ReadTxt(c *ConsulOperator, file string) ([]byte, error) {
 // ${appname}.yml, config/${appname} will be tried to load in order
 func NewConsulAppWithCfg(cfg interface{}, consulUrl string) (*ConsulApp, error) {
 	var capp ConsulApp
+	
+	if consulUrl == "" {
+		consulUrl = "127.0.0.1:8500"
+	}
 
 	appinfo, err := ParseConsulUrl(consulUrl)
 	if err != nil {
