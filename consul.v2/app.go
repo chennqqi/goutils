@@ -1,8 +1,10 @@
 package consul
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net"
 	"net/url"
 	"os"
@@ -10,9 +12,6 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/pkg/errors"
-
-	"github.com/Sirupsen/logrus"
 	"github.com/chennqqi/goutils/closeevent"
 	"github.com/chennqqi/goutils/utils"
 	"github.com/chennqqi/goutils/yamlconfig"
@@ -83,10 +82,10 @@ func NewConsulAppWithCfg(cfg interface{}, consulUrl string) (*ConsulApp, error) 
 	}
 
 	if err := consulapi.Ping(); err != nil {
-		logrus.Error("[consul/app.go] ping consul failed, try local")
+		log.Println("[consul/app.go] ping consul failed, try local")
 		var exist bool
 		for i := 0; i < len(names); i++ {
-			logrus.Infof("[consul/app.go] ping consul failed, try load %v", names[i])
+			log.Printf("[consul/app.go] ping consul failed, try load %v", names[i])
 			err := yamlconfig.Load(cfg, names[i])
 			if err == nil {
 				exist = true
@@ -94,7 +93,7 @@ func NewConsulAppWithCfg(cfg interface{}, consulUrl string) (*ConsulApp, error) 
 			}
 		}
 		if !exist {
-			logrus.Errorf("[consul/app.go] all try load failed, make default %v", defaultName)
+			log.Printf("[consul/app.go] all try load failed, make default %v", defaultName)
 			yamlconfig.Save(cfg, defaultName)
 			return nil, ErrNotExist
 		}
@@ -104,16 +103,16 @@ func NewConsulAppWithCfg(cfg interface{}, consulUrl string) (*ConsulApp, error) 
 		for i := 0; i < len(names); i++ {
 			txt, err := consulapi.Get(names[i])
 			if err == nil {
-				logrus.Infof("[consul/app.go] successfully get consul kv: %v", names[i])
+				log.Printf("[consul/app.go] successfully get consul kv: %v", names[i])
 				yaml.Unmarshal(txt, cfg)
 				exist = true
 				break
 			} else {
-			  logrus.Infof("[consul/app.go] failed get consul kv(%v), error(%v)", names[i], err)
+				log.Printf("[consul/app.go] failed get consul kv(%v), error(%v)", names[i], err)
 			}
 		}
 		if !exist {
-			logrus.Errorf("[consul/app.go] all try load failed, make default %v", defaultName)
+			log.Printf("[consul/app.go] all try load failed, make default %v", defaultName)
 			yamlconfig.Save(cfg, defaultName)
 			return nil, ErrNotExist
 		}
@@ -185,7 +184,7 @@ func (c *ConsulApp) Wait(stopcall func(os.Signal), signals ...os.Signal) {
 
 	c.RegisterService()
 	sig := <-quitChan
-	logrus.Info("[main:main] quit, recv signal ", sig)
+	log.Println("[main:main] quit, recv signal ", sig)
 	if stopcall != nil {
 		stopcall(sig)
 	}

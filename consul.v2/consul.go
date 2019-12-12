@@ -2,16 +2,16 @@ package consul
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"log"
 	"net/url"
 	"strings"
 	"sync"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/chennqqi/goutils/utils"
 	qgoutils "github.com/chennqqi/goutils/utils"
 	consulapi "github.com/hashicorp/consul/api"
-	"github.com/pkg/errors"
 )
 
 var (
@@ -51,7 +51,7 @@ func ParseConsulUrl(consulUrl string) (*ConsulAppInfo, error) {
 	u, err := url.Parse(consulUrl)
 	if err == nil {
 		if u.Scheme != "consul" {
-			return nil, errors.Errorf(`expect scheme consul, not %v`, u.Scheme)
+			return nil, fmt.Errorf(`expect scheme consul, not %v`, u.Scheme)
 		}
 		appinfo.Config = u.Path
 		appinfo.ConsulHost = strings.Split(u.Host, ":")[0]
@@ -123,7 +123,7 @@ func (c *ConsulOperator) Ping() error {
 		consul, err := consulapi.NewClient(consulCfg)
 		retErr = err
 		if err != nil {
-			logrus.Error("New consul client error: ", err)
+			log.Println("New consul client error:", err)
 			return
 		}
 		c.consul = consul
@@ -183,14 +183,14 @@ func (c *ConsulOperator) Acquire(key string, stopChan <-chan struct{}) error {
 	if !exist {
 		lock, err = c.consul.LockKey(key)
 		if err != nil {
-			logrus.Error("consul Acquire Lock key error ", err)
+			log.Println("consul Acquire Lock key error ", err)
 			return err
 		}
 		c.lockmap[key] = lock
 	}
 	_, err = lock.Lock(stopChan)
 	if err != nil {
-		logrus.Error("consul Acquire lock.Lock error ", err)
+		log.Println("consul Acquire lock.Lock error ", err)
 		return err
 	}
 	return nil
@@ -199,11 +199,11 @@ func (c *ConsulOperator) Acquire(key string, stopChan <-chan struct{}) error {
 func (c *ConsulOperator) Release(key string) error {
 	lock, exist := c.lockmap[key]
 	if !exist {
-		return errors.Errorf("%v lock not exist", key)
+		return fmt.Errorf("%v lock not exist", key)
 	}
 	err := lock.Unlock()
 	if err != nil {
-		logrus.Error("consul Release lock.Lock error ", err)
+		log.Println("consul Release lock.Lock error ", err)
 		return err
 	}
 	return nil
