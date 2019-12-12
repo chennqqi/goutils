@@ -3,18 +3,17 @@ package consul
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/url"
 	"os"
 	"os/signal"
 	"reflect"
 	"strings"
 
-	"github.com/pkg/errors"
-
-	"github.com/Sirupsen/logrus"
 	"github.com/chennqqi/goutils/closeevent"
 	"github.com/chennqqi/goutils/utils"
 	"github.com/chennqqi/goutils/yamlconfig"
+	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )
 
@@ -55,14 +54,14 @@ func NewAppWithCustomCfg(cfg interface{}, confName, healthHost string) (*ConsulA
 			confName = fmt.Sprintf("%s.yml", appName)
 		}
 
-		logrus.Error("[consul/app.go]  ping consul failed, try local")
+		log.Println("[consul/app.go]  ping consul failed, try local")
 		err := yamlconfig.Load(cfg, confName)
 		if os.IsNotExist(err) {
 			fmt.Println("configure not exist, make default")
 			yamlconfig.Save(cfg, confName)
 			return nil, err
 		} else if err != nil {
-			logrus.Errorf("[consul/app.go] Load %v config from local error: %v", confName, err)
+			log.Printf("[consul/app.go] Load %v config from local error: %v", confName, err)
 			return nil, err
 		}
 	} else {
@@ -76,7 +75,7 @@ func NewAppWithCustomCfg(cfg interface{}, confName, healthHost string) (*ConsulA
 		if err == nil {
 			yaml.Unmarshal(txt, cfg)
 		} else {
-			logrus.Errorf("[consul/app.go] Load conf(%v) from consul error: %v", confName, err)
+			log.Printf("[consul/app.go] Load conf(%v) from consul error: %v", confName, err)
 			err = yamlconfig.Load(cfg, confName)
 			if err != nil {
 				fmt.Println("make empty local config")
@@ -149,10 +148,10 @@ func NewAppWithCfgEx(cfg interface{}, healthHost, consulUrl string) (*ConsulApp,
 	}
 
 	if err := consulapi.Ping(); err != nil {
-		logrus.Error("[consul/app.go] ping consul failed, try local")
+		log.Println("[consul/app.go] ping consul failed, try local")
 		var exist bool
 		for i := 0; i < len(names); i++ {
-			logrus.Infof("[consul/app.go] ping consul failed, try load %v", names[i])
+			log.Printf("[consul/app.go] ping consul failed, try load %v", names[i])
 			err := yamlconfig.Load(cfg, names[i])
 			if err == nil {
 				exist = true
@@ -160,7 +159,7 @@ func NewAppWithCfgEx(cfg interface{}, healthHost, consulUrl string) (*ConsulApp,
 			}
 		}
 		if !exist {
-			logrus.Errorf("[consul/app.go] all try load failed, make default %v", defaultName)
+			log.Printf("[consul/app.go] all try load failed, make default %v", defaultName)
 			yamlconfig.Save(cfg, defaultName)
 			return nil, ErrNotExist
 		}
@@ -168,7 +167,7 @@ func NewAppWithCfgEx(cfg interface{}, healthHost, consulUrl string) (*ConsulApp,
 		//try /config/${APPNAME}.yml
 		var exist bool
 		for i := 0; i < len(names); i++ {
-			logrus.Infof("[consul/app.go] get consul kv: %v", names[i])
+			log.Printf("[consul/app.go] get consul kv: %v", names[i])
 			txt, err := consulapi.Get(names[i])
 			if err == nil {
 				yaml.Unmarshal(txt, cfg)
@@ -177,7 +176,7 @@ func NewAppWithCfgEx(cfg interface{}, healthHost, consulUrl string) (*ConsulApp,
 			}
 		}
 		if !exist {
-			logrus.Errorf("[consul/app.go] all try load failed, make default %v", defaultName)
+			log.Printf("[consul/app.go] all try load failed, make default %v", defaultName)
 			yamlconfig.Save(cfg, defaultName)
 			return nil, ErrNotExist
 		}
@@ -239,7 +238,7 @@ func NewApp(healthHost, agent string) (*ConsulApp, error) {
 	capp.ConsulOperator = consulapi
 
 	if err := consulapi.Ping(); err != nil {
-		logrus.Error("[main] ping consul failed, try local")
+		log.Println("[main] ping consul failed, try local")
 		return nil, err
 	}
 
@@ -265,7 +264,7 @@ func (c *ConsulApp) Wait(stopcall func(os.Signal), signals ...os.Signal) {
 
 	c.RegisterService()
 	sig := <-quitChan
-	logrus.Info("[main:main] quit, recv signal ", sig)
+	log.Println("[main:main] quit, recv signal ", sig)
 	if stopcall != nil {
 		stopcall(sig)
 	}
