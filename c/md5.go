@@ -1,6 +1,6 @@
 package c
 
-//#cgo CFLAGS: -I .
+// #cgo CFLAGS: -I .
 
 /*
 #include "md5.h"
