@@ -46,7 +46,7 @@ func ReadTxt(c *ConsulOperator, file string) ([]byte, error) {
 // ${appname}.yml, config/${appname} will be tried to load in order
 func NewConsulAppWithCfg(cfg interface{}, consulUrl string) (*ConsulApp, error) {
 	var capp ConsulApp
-	
+
 	if consulUrl == "" {
 		consulUrl = "127.0.0.1:8500"
 	}
@@ -108,7 +108,10 @@ func NewConsulAppWithCfg(cfg interface{}, consulUrl string) (*ConsulApp, error) 
 			txt, err := consulapi.Get(names[i])
 			if err == nil {
 				log.Printf("[consul/app.go] successfully get consul kv: %v", names[i])
-				yaml.Unmarshal(txt, cfg)
+				err = yaml.Unmarshal(txt, cfg)
+				if err != nil {
+					return &capp, err
+				}
 				exist = true
 				break
 			} else {
