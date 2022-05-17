@@ -157,24 +157,28 @@ func ScanZip(archive, tmpDir string, sizeLimit uint64, scanCall func(filename st
 		if err != nil {
 			return err
 		}
-		defer fileReader.Close()
 
 		targetFile, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
 		if err != nil {
+			fileReader.Close()
 			return err
 		}
-		defer os.Remove(filePath)
 
 		if _, err := io.Copy(targetFile, fileReader); err != nil {
+			fileReader.Close()
 			targetFile.Close()
+			os.Remove(filePath)
 			return err
 		}
 		targetFile.Close()
+		fileReader.Close()
 
 		err = scanCall(filePath)
 		if err != nil {
+			os.Remove(filePath)
 			return err
 		}
+		os.Remove(filePath)
 	}
 	return nil
 }
